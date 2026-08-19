@@ -1,0 +1,10 @@
+{
+  "mcpServers": {
+    "supabase": {
+      "transport": "http",
+      "url": "https://mcp.supabase.com/mcp?project_ref=fnxjnfhdhlzbwkisuuzf&features=docs%2Caccount%2Cdatabase%2Cdebugging%2Cdevelopment%2Cfunctions%2Cbranching",
+      "disabled": false,
+      "autoApprove": []
+    }
+  }
+}
