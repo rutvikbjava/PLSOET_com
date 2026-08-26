@@ -1,22 +1,13 @@
-Yes. Since **EDU-001 is done** and you have **no existing repository**, this is the corrected **Prompt 2**.
-
-This prompt will make the AI create the project from zero, but it will **not start building EduSphere's business features yet**. It establishes a clean production foundation first.
-
-## Prompt 2 — Initialize the Fresh Production Project
-
-Copy the entire prompt below into your coding AI:
-
-```text
 You are continuing the EduSphere AI production build.
 
-This project is being built FROM SCRATCH.
-
 IMPORTANT:
-There is currently NO existing application repository or existing implementation to preserve.
+This project is now initialized and the required application code has been pushed to the Git repository.
 
-We are starting a brand-new production-grade web service based on the EduSphere AI PRD.
+The repository should contain ONLY files required to build, test, deploy, and maintain the application.
 
-Before doing anything, read these files if they already exist:
+The AI project-memory Markdown files may be maintained locally outside Git according to the user's repository policy.
+
+Before doing anything, read the locally available project-state files:
 
 1. 01_AI_BUILD_RULES.md
 2. PROJECT_MEMORY.md
@@ -24,760 +15,645 @@ Before doing anything, read these files if they already exist:
 4. ERROR_LOG.md
 5. PROJECT_CONTEXT.md
 
-If these files do not yet exist because the repository is completely empty, create them according to the project rules before continuing.
+If these files are not available locally, STOP and tell me that the project-state files are missing. Do not invent project history.
 
 ==================================================
 TASK
 ==================================================
 
-TASK ID: EDU-002
+TASK ID: EDU-003
 
 TASK NAME:
 
-Initialize Fresh EduSphere AI Production Project
+Configure Supabase for Production Development
 
 ==================================================
-PRIMARY OBJECTIVE
+OBJECTIVE
 ==================================================
 
-Create the initial production-grade web application foundation for EduSphere AI.
+Connect the freshly initialized EduSphere AI application to Supabase using a production-safe architecture.
 
-We are NOT implementing the complete EduSphere product yet.
+This task is ONLY about establishing the Supabase foundation.
 
-This task establishes:
+DO NOT implement the complete database schema yet.
 
-- repository
-- project structure
-- frontend framework
-- TypeScript
-- package management
-- linting
-- formatting
-- environment configuration
-- application architecture
-- basic UI foundation
-- error handling foundation
-- testing foundation
-- Git configuration
-- documentation
-- persistent AI project memory
+DO NOT implement authentication yet.
 
-After this task, the project must be ready for the next stage:
+DO NOT implement workflow functionality yet.
 
-EDU-003 — Supabase Configuration
+DO NOT implement the policy engine yet.
+
+Those will be separate tasks.
 
 ==================================================
-IMPORTANT PRD CONTEXT
+1. INSPECT THE CURRENT PROJECT FIRST
 ==================================================
 
-EduSphere AI is a SaaS platform for higher education workflow automation.
+Before changing anything, inspect:
 
-The PRD describes the product as:
-
-- secure
-- SaaS-based
-- microservices-oriented
-- context-aware
-- policy-constrained
-
-The core future workflow is:
-
-Document Upload
-        ↓
-Context Analysis
-        ↓
-Candidate Workflow Generation
-        ↓
-Policy Validation
-        ↓
-Workflow Execution
-        ↓
-Approval & Signature
-        ↓
-Audit Trail
-
-Do NOT implement these business systems during EDU-002.
-
-Only create the technical foundation required to build them safely.
-
-==================================================
-1. FIRST: INSPECT THE CURRENT DIRECTORY
-==================================================
-
-Before creating files:
-
-Inspect the current working directory.
+- package.json
+- lockfile
+- src/
+- app/
+- lib/
+- config/
+- existing environment configuration
+- .gitignore
+- README.md
+- existing Supabase-related files
 
 Determine:
 
-- Is it completely empty?
-- Is Git initialized?
-- Are there hidden files?
-- Are there existing project files?
-- Are there existing README files?
-- Are there package managers already configured?
+- framework
+- package manager
+- current environment strategy
+- whether Supabase dependencies already exist
+- whether any Supabase code already exists
 
-Do not assume the directory is empty.
-
-If there are unexpected files:
-
-inspect them before deleting anything.
-
-NEVER delete existing user files without explicit permission.
+Do not reinstall dependencies unnecessarily.
 
 ==================================================
-2. CHOOSE THE WEB FRAMEWORK
+2. SUPABASE ARCHITECTURE
 ==================================================
 
-If the project is completely empty, use:
+Establish a clean architecture for:
 
-Next.js
-+
-TypeScript
-+
-App Router
+Browser
+   ↓
+Browser-safe Supabase client
 
-Use a currently stable version compatible with the project's environment.
+Server
+   ↓
+Server Supabase client
+   ↓
+Authenticated user/session
+   ↓
+PostgreSQL
 
-The application must be suitable for:
+Privileged server operations, if required later:
 
-- production deployment
-- Vercel
-- Supabase
-- server-side operations
-- authenticated applications
-- API/server functionality
-- scalable component architecture
+Server-only code
+   ↓
+Service-role Supabase client
 
-Do NOT add unnecessary frameworks.
+IMPORTANT:
 
-==================================================
-3. PROJECT INITIALIZATION
-==================================================
+The service-role key MUST NEVER reach browser/client code.
 
-Initialize the project with:
-
-- TypeScript
-- strict mode
-- ESLint
-- appropriate formatting
-- App Router
-- sensible source directory structure
-- production build configuration
-
-Prefer a clean structure such as:
-
-src/
-  app/
-  components/
-  lib/
-  hooks/
-  services/
-  types/
-  config/
-
-Use appropriate alternatives if the selected framework/version recommends a different structure.
-
-Do not create hundreds of empty files.
-
-Create only meaningful foundational directories/files.
+Do not expose it through:
+- NEXT_PUBLIC_ variables
+- client components
+- browser bundles
+- API responses
+- logs
 
 ==================================================
-4. PACKAGE MANAGEMENT
+3. INSTALL REQUIRED DEPENDENCIES
 ==================================================
 
-Choose one package manager.
+Install only the dependencies actually required for the chosen Supabase architecture.
 
-Prefer the package manager already configured in the environment if one exists.
+Prefer the official Supabase JavaScript ecosystem and framework-compatible packages.
 
-Otherwise use npm unless there is a strong technical reason to use another.
+Do not install:
 
-Create and commit the appropriate lockfile.
+- unrelated ORM libraries
+- multiple database clients
+- unnecessary state-management libraries
+- unnecessary Supabase wrappers
 
-Do not mix package managers.
+Every dependency added must have a clear purpose.
 
-==================================================
-5. TYPESCRIPT
-==================================================
-
-Configure TypeScript for production development.
-
-Requirements:
-
-- strict mode
-- no implicit any
-- sensible module resolution
-- path aliases where useful
-- clean type boundaries
-
-Do not disable TypeScript strictness just to make code compile.
+Record important dependency decisions in PROJECT_MEMORY.md.
 
 ==================================================
-6. ENVIRONMENT CONFIGURATION
+4. ENVIRONMENT VARIABLES
 ==================================================
 
-Create:
+Establish the environment-variable structure.
 
-.env.example
+At minimum distinguish between:
 
-Do NOT create a production secret file containing real credentials.
+PUBLIC:
 
-The initial environment file should establish the structure needed for future Supabase configuration.
+NEXT_PUBLIC_SUPABASE_URL
 
-Use placeholder names only.
+NEXT_PUBLIC_SUPABASE_ANON_KEY
 
-For example, use variable names appropriate for the chosen Supabase architecture, but DO NOT invent real credentials.
+SERVER ONLY:
 
-Clearly distinguish:
+SUPABASE_SERVICE_ROLE_KEY
 
-PUBLIC/BROWSER-SAFE VARIABLES
+Use the appropriate variable names for the project's implementation.
 
-from:
+IMPORTANT:
 
-SERVER-ONLY SECRET VARIABLES
+Do not place real credentials into source code.
 
-Document this distinction.
+Do not place real credentials into:
 
-==================================================
-7. APPLICATION CONFIGURATION
-==================================================
+- README.md
+- PROJECT_MEMORY.md
+- PROJECT_CONTEXT.md
+- PROGRESS.md
+- ERROR_LOG.md
+- Git
+- client-side source code
 
-Create a safe configuration approach.
-
-Environment variables must be validated.
-
-Avoid directly scattering:
-
-process.env.X
-
-throughout the application.
-
-Create a configuration boundary where appropriate.
-
-The configuration system must make it difficult to accidentally expose server-only secrets to browser code.
+Only variable names and safe descriptions may be documented.
 
 ==================================================
-8. APPLICATION ARCHITECTURE
+5. UPDATE .GITIGNORE
 ==================================================
 
-Create a clean initial architecture.
+Verify that Git ignores sensitive/local files.
 
-The architecture must be capable of growing into:
+At minimum ensure appropriate patterns exist for:
 
-- authentication
-- authorization
-- institutions
-- departments
-- documents
-- context engine
-- policy engine
-- workflow generator
-- workflow execution
-- approvals
-- signatures
-- notifications
-- audit trail
-- analytics
+.env
+.env.local
+.env.*.local
+.env.production
+node_modules
+.next
+coverage
+logs
+OS/editor temporary files
 
-Do NOT implement these systems yet.
+Do not blindly add patterns that would ignore required source files.
 
-Create only the architectural boundaries necessary to support them later.
-
-Prefer separation between:
-
-UI
-↓
-Application logic
-↓
-Services
-↓
-Data access
-↓
-External services
-
-Avoid putting business logic directly inside UI components.
+The repository must continue containing all files necessary to build the application.
 
 ==================================================
-9. BASIC APPLICATION SHELL
+6. CREATE SUPABASE CLIENT ARCHITECTURE
 ==================================================
 
-Create a minimal professional application shell.
+Create a clean Supabase integration.
 
-It should include:
+Use separate boundaries where appropriate for:
 
-- root layout
-- basic navigation structure
-- application page
-- responsive layout
-- accessible HTML
-- basic typography
-- loading strategy
-- error strategy
-- not-found strategy
+### Browser client
 
-Do not build the full dashboard.
+Used by browser-safe client-side functionality.
 
-Do not build fake workflow data.
+### Server client
 
-Do not build fake authentication.
+Used by server-side application functionality and authenticated operations.
 
-Do not create fake AI functionality.
+### Admin/service-role client
 
-The application shell should communicate that EduSphere AI is being initialized.
+Only create this abstraction if the project actually needs privileged operations.
 
-==================================================
-10. UI FOUNDATION
-==================================================
+If created:
 
-Create a reusable UI foundation.
+- it must be server-only
+- it must never be imported into client components
+- it must never expose the service-role key
+- it must not bypass authorization casually
 
-At minimum establish conventions for:
-
-- buttons
-- inputs
-- cards
-- labels
-- headings
-- page containers
-- loading states
-- empty states
-- error states
-
-Do not install a huge component library unless there is a clear reason.
-
-If a component library is chosen, document why.
-
-Accessibility requirements:
-
-- semantic HTML
-- keyboard accessibility
-- visible focus states
-- appropriate labels
-- reasonable color contrast
-- responsive layout
+Document the security implications.
 
 ==================================================
-11. ERROR HANDLING FOUNDATION
+7. TYPE SAFETY
 ==================================================
 
-Establish application-level error handling.
+Prepare the application for strongly typed Supabase database access.
 
-Include appropriate mechanisms for:
+If database types can be generated safely at this stage:
 
-- application errors
-- route errors
-- not-found states
-- server errors
-- client errors
+set up the generation workflow.
 
-Do not expose internal stack traces to normal production users.
+However:
 
-Developer diagnostics may be more detailed in development.
+DO NOT create the final EduSphere database schema yet.
 
-==================================================
-12. LOGGING FOUNDATION
-==================================================
+Do not invent the complete database schema just to generate types.
 
-Create a simple logging strategy.
+The schema will be created in EDU-004.
 
-Logs should support future debugging.
-
-Avoid:
-
-console.log("everything")
-
-throughout the application.
-
-Create a clear approach for:
-
-- info
-- warning
-- error
-
-Do not introduce an expensive observability platform yet.
-
-That can be added later if required.
+If type generation must wait until migrations exist, document that clearly.
 
 ==================================================
-13. TESTING FOUNDATION
+8. SUPABASE CLI
 ==================================================
 
-Set up an appropriate testing foundation.
+Determine whether the Supabase CLI should be used for this project.
 
-At minimum establish the ability to write:
+For a production-grade project, establish a migration-based workflow.
 
-- unit tests
-- integration tests where appropriate
+If the CLI is appropriate:
 
-Do not create meaningless tests simply to increase coverage.
+- initialize Supabase project configuration
+- establish local development configuration
+- establish migrations directory
+- document how migrations will be created/applied
 
-Create at least one real foundational test proving the test system works.
+Do not push arbitrary schema changes directly to production.
 
-The test must be deterministic.
-
-==================================================
-14. CODE QUALITY
-==================================================
-
-Configure:
-
-- ESLint
-- formatting
-- TypeScript checking
-
-The project should support commands similar to:
-
-npm run lint
-npm run typecheck
-npm run test
-npm run build
-
-Use the actual package manager selected for the project.
-
-If any command fails:
-
-diagnose it.
-
-Do not suppress the error without understanding it.
+Do not create the full schema yet.
 
 ==================================================
-15. GIT
+9. LOCAL DEVELOPMENT STRATEGY
 ==================================================
 
-Initialize Git if it is not already initialized.
+Establish a reproducible development strategy.
 
-Create a proper .gitignore.
+Document:
 
-It MUST prevent accidental commits of:
+- how developers connect to the Supabase project
+- how environment variables are configured
+- how migrations will be applied
+- how local development differs from production
+- how test data will eventually be handled
 
-- .env
-- .env.local
-- secrets
-- build output
-- node_modules
-- temporary files
-- local IDE files where appropriate
+Do not create production data.
 
-Do not commit secrets.
-
-Create an initial commit if Git workflow permits and this repository is intended to be committed now.
-
-Use a meaningful commit message.
+Do not insert fake production users.
 
 ==================================================
-16. README
+10. SUPABASE PROJECT CONNECTION
 ==================================================
 
-Create a professional README.md.
+If the user has already created a Supabase project and provided credentials through environment variables:
 
-It must explain:
+verify connectivity safely.
 
-- EduSphere AI
-- project purpose
-- technology stack
-- how to install dependencies
-- how to run development
-- how to run tests
-- how to run lint
-- how to run typecheck
-- how to build
-- environment configuration
-- project structure
-- current development status
+If credentials are NOT available:
 
-Do not claim unfinished features are implemented.
+DO NOT fabricate credentials.
+
+Set up the integration and report exactly what the user must configure.
+
+Never ask the user to paste secrets into chat if they can put them into their local environment.
+
+The preferred approach is:
+
+.env.local
+
+with the required variables.
 
 ==================================================
-17. PROJECT MEMORY FILES
+11. DATABASE CONNECTION TEST
 ==================================================
 
-Create or update:
+Create a minimal safe connectivity verification.
 
-01_AI_BUILD_RULES.md
+The test should confirm that the application can communicate with Supabase.
+
+Do NOT create application tables yet.
+
+Do NOT create production data.
+
+Do NOT bypass RLS.
+
+If there is no database table available yet, use an appropriate minimal connectivity/configuration check rather than inventing application data.
+
+==================================================
+12. SECURITY VERIFICATION
+==================================================
+
+Perform a security review specifically for the Supabase integration.
+
+Verify:
+
+[ ] service-role key is server-only
+[ ] public keys are the only keys exposed to browser code
+[ ] .env files are ignored
+[ ] secrets are not committed
+[ ] secrets are not logged
+[ ] browser client and server client are separated appropriately
+[ ] privileged client cannot be imported into client-side code
+[ ] no database authorization is being bypassed
+[ ] no hardcoded Supabase credentials exist
+
+If possible, inspect the resulting client bundle/build configuration to ensure secrets are not exposed.
+
+==================================================
+13. VERCEL COMPATIBILITY
+==================================================
+
+Ensure the Supabase integration is compatible with Vercel.
+
+Do not deploy yet.
+
+Verify that:
+
+- environment variables can be configured through Vercel
+- server-only variables remain server-only
+- browser variables use the appropriate public prefix
+- build does not depend on local-only files
+- runtime configuration is documented
+
+Do not add Vercel secrets to Git.
+
+==================================================
+14. README
+==================================================
+
+Update README.md with a concise Supabase setup section.
+
+Include:
+
+1. Create/configure Supabase project
+2. Required environment variables
+3. Local development configuration
+4. Migration strategy
+5. Important security warning
+
+NEVER include actual credentials.
+
+==================================================
+15. STATE FILES
+==================================================
+
+Update:
+
 PROJECT_MEMORY.md
 PROGRESS.md
 ERROR_LOG.md
 PROJECT_CONTEXT.md
 
-These are part of the actual repository.
+Remember:
 
-They MUST be committed to Git.
+These Markdown files are project-memory files.
 
-==================================================
-18. PROJECT_MEMORY UPDATE
-==================================================
+The user has chosen not to push them to the Git repository.
 
-Record:
+Therefore:
 
-- project has been initialized from scratch
-- selected framework
-- selected language
-- package manager
-- initial architecture
-- environment strategy
-- testing strategy
-- Git strategy
-- important technical decisions
+- maintain them locally
+- DO NOT force-add them to Git
+- DO NOT commit them
+- DO NOT modify .gitignore to force them into the repository
 
-Create decision IDs where appropriate.
-
-For example:
-
-DEC-001 — Initial web framework
-DEC-002 — Package manager
-DEC-003 — Initial application architecture
-
-Only create decisions that actually occurred.
+If they are already tracked in Git, report that before changing anything.
 
 ==================================================
-19. PROGRESS UPDATE
+16. TASK STATE
 ==================================================
 
 Update:
 
-EDU-002
+EDU-003
 
-Status should be:
+During implementation:
 
 IN_PROGRESS
 
-during implementation.
-
-Only change it to:
+After successful verification:
 
 COMPLETE
 
-after all acceptance criteria pass.
+If Supabase credentials are unavailable but the code foundation is complete:
 
-Then define:
+PARTIAL
 
-Next Task:
-
-EDU-003 — Configure Supabase
+Do not mark COMPLETE if actual required verification cannot be performed.
 
 ==================================================
-20. PROJECT_CONTEXT UPDATE
+17. ERROR PROTOCOL
 ==================================================
 
-Create a detailed entry for EDU-002.
+If any error occurs:
 
-Record:
+Create:
 
-- starting state
-- project initialization
-- framework selection
-- dependencies
-- directory structure
-- configuration
-- UI foundation
-- testing foundation
-- Git initialization
-- README
-- errors
-- decisions
-- verification
-- next task
+ERR-XXX
 
-==================================================
-21. ERROR PROTOCOL
-==================================================
+Example:
 
-If anything goes wrong:
-
-Create ERR-XXX.
+ERR-001
 
 Record:
 
 - exact error
-- command
+- task
 - environment
+- reproduction
 - root cause
-- solution
+- attempted solution
+- final solution
 - files changed
 - verification
 - prevention
 
-Link it to:
+Link the error to EDU-003.
 
-EDU-002
+If the error reveals a reusable security or architecture lesson:
 
-If the error produces a reusable lesson:
-
-also update PROJECT_MEMORY.md.
-
-Do not silently fix meaningful errors.
+update PROJECT_MEMORY.md.
 
 ==================================================
-22. DO NOT INSTALL SUPABASE YET
+18. DECISION PROTOCOL
 ==================================================
 
-Important:
+If an important Supabase architectural decision is made:
 
-DO NOT perform the actual Supabase integration during EDU-002.
+create:
 
-Do not:
+DEC-XXX
 
-- create Supabase database tables
-- create migrations
-- configure authentication
-- create RLS
-- configure Supabase Storage
-- create Edge Functions
-- add service-role credentials
+Record:
+
+- decision
+- reason
+- alternatives
+- consequences
+- related task
+
+Examples:
+
+DEC-004 — Supabase client architecture
+DEC-005 — Supabase migration strategy
+
+Only create IDs for decisions that actually occur.
+
+==================================================
+19. DO NOT BUILD THE DATABASE YET
+==================================================
+
+This is extremely important.
+
+DO NOT create:
+
+- institutions table
+- profiles table
+- departments table
+- documents table
+- policies table
+- workflows table
+- approvals table
+- signatures table
+- notifications table
+- audit table
 
 Those belong to:
 
-EDU-003 — Configure Supabase
+EDU-004 — Design and Implement Database Schema
 
-You may create clean architectural placeholders/interfaces if genuinely necessary, but do not implement Supabase functionality yet.
+EDU-003 only establishes Supabase infrastructure and integration.
 
 ==================================================
-23. DO NOT BUILD BUSINESS FEATURES
+20. DO NOT IMPLEMENT AUTHENTICATION YET
 ==================================================
 
-Do NOT implement:
+Do not implement:
 
-- workflow engine
-- AI context engine
-- policy engine
-- document management
-- approvals
-- signatures
-- notifications
-- audit trail
-- analytics
-- institution management
+- login
+- signup
+- password reset
+- OAuth
 - role management
+- protected dashboard routes
 
-Those will be built later in separate verified tasks.
+Those belong to later tasks.
+
+You may prepare the architecture so authentication can be added cleanly.
 
 ==================================================
-24. VERIFY EVERYTHING
+21. VERIFICATION
 ==================================================
 
-After implementation run:
+Run all applicable checks:
 
 1. dependency installation
 2. lint
 3. typecheck
 4. tests
 5. production build
+6. Supabase connectivity/configuration verification
+7. secret exposure review
 
-Use the actual commands defined by the project.
+Use the actual project commands.
 
-Fix errors found during verification.
+If something fails:
 
-Run the checks again after fixes.
+fix it and run the check again.
 
-The final result must be verified, not assumed.
+Do not suppress errors without understanding them.
 
 ==================================================
-25. ACCEPTANCE CRITERIA
+22. ACCEPTANCE CRITERIA
 ==================================================
 
-EDU-002 can be marked COMPLETE only if:
+EDU-003 can be marked COMPLETE only if:
 
-[ ] fresh project successfully initialized
-[ ] framework configured
-[ ] TypeScript strict mode configured
-[ ] package manager established
-[ ] project structure established
-[ ] environment strategy established
-[ ] .env.example created
-[ ] secrets protected
-[ ] application shell created
-[ ] basic accessible UI foundation created
-[ ] error handling foundation created
-[ ] logging foundation created
-[ ] testing foundation created
+[ ] Supabase integration architecture established
+[ ] required dependencies installed
+[ ] browser client configured
+[ ] server client configured
+[ ] service-role abstraction secured if required
+[ ] environment variables documented
+[ ] .env files protected by .gitignore
+[ ] no secrets committed
+[ ] no secrets exposed to browser
+[ ] Supabase configuration documented
+[ ] migration strategy established
+[ ] database schema intentionally NOT implemented yet
+[ ] authentication intentionally NOT implemented yet
+[ ] Vercel compatibility considered
+[ ] README updated
 [ ] lint passes
 [ ] typecheck passes
 [ ] tests pass
 [ ] production build passes
-[ ] Git initialized/configured
-[ ] .gitignore configured
-[ ] README created
-[ ] five AI memory/state files updated
-[ ] all meaningful errors recorded
-[ ] all important decisions recorded
+[ ] state files updated
+[ ] errors recorded
+[ ] decisions recorded
 [ ] next task identified
 
 ==================================================
-26. FINAL RESPONSE
+23. GIT VERIFICATION
 ==================================================
 
-After completing EDU-002, STOP.
+Before finishing, inspect:
 
-Do NOT start EDU-003 automatically.
+git status
 
-Return:
+and verify that:
 
-# EDU-002 — Fresh Project Initialization
+- secrets are NOT staged
+- .env files are NOT tracked
+- node_modules is NOT tracked
+- .next is NOT tracked
+- local AI Markdown memory files are NOT tracked if that is the user's chosen repository policy
+- required application files remain tracked
+
+Do NOT use:
+
+git add -f
+
+to force excluded files into the repository.
+
+Do not rewrite Git history unless explicitly requested.
+
+==================================================
+24. FINAL REPORT
+==================================================
+
+After completing the task, STOP.
+
+Return exactly:
+
+# EDU-003 — Supabase Configuration
 
 ## Status
 COMPLETE / PARTIAL / BLOCKED
 
-## Project Stack
-- Framework:
-- Version:
-- Language:
-- Package manager:
-- Styling:
-- Testing:
-- Deployment target:
-
-## Architecture
-Briefly explain the initial architecture.
-
-## Project Structure
-Show the important directories.
-
-## Dependencies
-List important dependencies and why they were added.
+## Supabase Setup
+- Supabase project configured: YES/NO
+- Client configured: YES/NO
+- Server client configured: YES/NO
+- Service-role abstraction: YES/NO/NOT REQUIRED
+- Migration system: YES/NO
 
 ## Environment
-List environment variable NAMES only.
-NEVER display secret values.
+List variable NAMES only.
 
-## UI Foundation
-Explain what was created.
+Never reveal secret values.
 
-## Testing
+## Security
+List verification results.
+
+## Database
+Explicitly state:
+
+"Application database schema has NOT yet been implemented. It is scheduled for EDU-004."
+
+## Authentication
+Explicitly state:
+
+"Authentication has NOT yet been implemented. It will be implemented in a later task."
+
+## Tests
 Show exact commands and results.
 
 ## Build
 Show exact command and result.
 
-## Git
-Explain Git initialization and initial commit if performed.
+## Git Status
+Explain what is tracked and confirm secrets are excluded.
 
 ## Errors
-List ERR IDs.
+List ERR IDs or state that none occurred.
 
 ## Decisions
 List DEC IDs.
 
 ## Files Created/Changed
-List them.
+List every relevant source/configuration file.
+
+Do NOT list secret values.
 
 ## State Files
-Confirm all five state files were updated.
+Confirm local state files were updated.
 
 ## Next Task
 
-EDU-003 — Configure Supabase
+EDU-004 — Design and Implement EduSphere AI Database Schema and Supabase Migrations
 
-Explain why EDU-003 is the next dependency.
+Explain why EDU-004 is next.
 
-STOP HERE.
+STOP.
 
-Wait for the next prompt.
-```
-
-### After this prompt
-
-The AI should leave you with a **clean, runnable Next.js/TypeScript project**, but **without pretending that EduSphere's actual functionality exists yet**.
-
-When it finishes, paste its **EDU-002 final report here**.
-
-Then I'll give you **EDU-003 — Supabase configuration**, and we'll continue one prompt at a time.
+Do not begin EDU-004 automatically.

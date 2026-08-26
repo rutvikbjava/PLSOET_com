@@ -54,13 +54,28 @@ EduSphere AI is a secure SaaS platform that automates institutional approval wor
 
 ## Getting Started
 
-### 1. Install Dependencies
+### 1. Supabase Setup
+
+Before running the application, you need to set up a Supabase project:
+
+1. **Create a Supabase Project**
+   - Go to [supabase.com](https://supabase.com)
+   - Create a new project
+   - Wait for the database to initialize
+
+2. **Get Your Supabase Credentials**
+   - Go to Project Settings > API
+   - Copy your project URL
+   - Copy your `anon` public key
+   - Copy your `service_role` key (keep this secret!)
+
+### 2. Install Dependencies
 
 ```bash
 npm install
 ```
 
-### 2. Environment Configuration
+### 3. Environment Configuration
 
 Copy the example environment file:
 
@@ -82,7 +97,24 @@ SUPABASE_SERVICE_ROLE_KEY=your-service-role-key
 
 **Important**: Never commit `.env.local` or any file containing real credentials.
 
-### 3. Run Development Server
+### 4. Database Migrations
+
+The project uses Supabase migrations for database schema management:
+
+```bash
+# Start local Supabase (requires Docker)
+npm run db:start
+
+# Apply migrations
+npm run db:migrate
+
+# Generate TypeScript types from database schema
+npm run db:generate-types
+```
+
+**Note:** Database schema will be implemented in EDU-004. For now, the migration system is configured but no migrations exist yet.
+
+### 5. Run Development Server
 
 ```bash
 npm run dev
@@ -90,7 +122,7 @@ npm run dev
 
 Open [http://localhost:3000](http://localhost:3000) to view the application.
 
-### 4. Run Tests
+### 6. Run Tests
 
 ```bash
 npm test
@@ -102,19 +134,19 @@ Run tests in watch mode:
 npm run test:watch
 ```
 
-### 5. Type Checking
+### 7. Type Checking
 
 ```bash
 npm run typecheck
 ```
 
-### 6. Linting
+### 8. Linting
 
 ```bash
 npm run lint
 ```
 
-### 7. Production Build
+### 9. Production Build
 
 ```bash
 npm run build
@@ -136,11 +168,20 @@ edusphere-ai/
 │   ├── components/           # React components
 │   │   └── ui/              # Reusable UI components
 │   ├── lib/                 # Utility functions
-│   │   └── logger.ts        # Logging utility
+│   │   ├── logger.ts        # Logging utility
+│   │   └── supabase/        # Supabase clients
+│   │       ├── client.ts    # Browser client
+│   │       ├── server.ts    # Server client
+│   │       ├── admin.ts     # Admin/service-role client
+│   │       ├── test-connection.ts  # Connectivity test
+│   │       └── index.ts     # Exports
 │   ├── config/              # Configuration
 │   │   └── env.ts           # Environment config
 │   ├── types/               # TypeScript types
 │   └── __tests__/           # Test files
+├── supabase/                # Supabase configuration
+│   ├── config.toml          # Supabase project config
+│   └── migrations/          # Database migrations (EDU-004)
 ├── public/                   # Static assets
 ├── .kiro/                   # Kiro IDE configuration
 ├── 01_AI_BUILD_RULES.md     # AI development rules
@@ -152,6 +193,37 @@ edusphere-ai/
 ```
 
 ## Architecture
+
+### Supabase Client Architecture
+
+The application uses a three-tier Supabase client architecture:
+
+**1. Browser Client (`src/lib/supabase/client.ts`)**
+- Safe for client components
+- Uses ANON key (public, rate-limited)
+- Respects Row Level Security (RLS) policies
+- User-scoped operations only
+
+**2. Server Client (`src/lib/supabase/server.ts`)**
+- For Server Components, Server Actions, API Routes
+- Uses ANON key with cookie-based authentication
+- Respects RLS policies for authenticated user
+- Preferred for most server-side operations
+
+**3. Admin Client (`src/lib/supabase/admin.ts`)**
+- ⚠️ BYPASSES ALL RLS POLICIES
+- Uses SERVICE_ROLE key (full database access)
+- Server-only (never in browser)
+- Only for privileged operations
+- Use with extreme caution
+
+### Migration Strategy
+
+- Migrations stored in `supabase/migrations/`
+- Version-controlled SQL files
+- Applied with `npm run db:migrate`
+- Local development with `npm run db:start` (requires Docker)
+- Type generation with `npm run db:generate-types`
 
 ### Configuration Layer
 - Centralized environment variable management

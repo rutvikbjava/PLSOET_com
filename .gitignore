@@ -47,3 +47,15 @@ next-env.d.ts
 
 # OS
 Thumbs.db
+
+# Supabase
+.branches
+.temp
+.functions
+
+# AI Project State Files (local only)
+01_AI_BUILD_RULES.md
+PROJECT_MEMORY.md
+PROGRESS.md
+ERROR_LOG.md
+PROJECT_CONTEXT.md
