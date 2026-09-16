@@ -69,8 +69,12 @@ export default function UploadVersionForm({
       setError(null);
       setErrors([]);
 
+      // Create FormData
+      const formData = new FormData();
+      formData.append('file', selectedFile);
+
       // Upload version
-      const result = await uploadDocumentVersion(documentId, selectedFile);
+      const result = await uploadDocumentVersion(documentId, formData);
 
       if (!result.success) {
         setError(result.error || 'Upload failed');

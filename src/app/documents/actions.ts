@@ -878,12 +878,12 @@ export async function getCurrentDocumentDownloadUrl(
  * - Unique constraint prevents race conditions
  * 
  * @param documentId Document UUID
- * @param file New version file
+ * @param formData FormData with file
  * @returns Result with version ID or errors
  */
 export async function uploadDocumentVersion(
   documentId: string,
-  file: File
+  formData: FormData
 ): Promise<UploadDocumentResult> {
   try {
     // ==========================================
@@ -931,7 +931,20 @@ export async function uploadDocumentVersion(
     }
 
     // ==========================================
-    // 3. VALIDATE FILE
+    // 3. EXTRACT FILE FROM FORMDATA
+    // ==========================================
+
+    const file = formData.get('file') as File | null;
+
+    if (!file) {
+      return {
+        success: false,
+        error: 'No file provided',
+      };
+    }
+
+    // ==========================================
+    // 4. VALIDATE FILE
     // ==========================================
 
     const fileValidation = validateFile(file);
@@ -944,7 +957,7 @@ export async function uploadDocumentVersion(
     }
 
     // ==========================================
-    // 4. CALCULATE NEXT VERSION NUMBER
+    // 5. CALCULATE NEXT VERSION NUMBER
     // ==========================================
 
     // Get current max version number
@@ -968,7 +981,7 @@ export async function uploadDocumentVersion(
     const nextVersion = maxVersionData ? maxVersionData.version_number + 1 : 1;
 
     // ==========================================
-    // 5. UPLOAD FILE TO STORAGE
+    // 6. UPLOAD FILE TO STORAGE
     // ==========================================
 
     const storagePath = generateStoragePath(
@@ -997,7 +1010,7 @@ export async function uploadDocumentVersion(
     }
 
     // ==========================================
-    // 6. CREATE VERSION RECORD
+    // 7. CREATE VERSION RECORD
     // ==========================================
 
     const { data: version, error: versionError } = await supabase
@@ -1038,7 +1051,7 @@ export async function uploadDocumentVersion(
     }
 
     // ==========================================
-    // 7. UPDATE DOCUMENT
+    // 8. UPDATE DOCUMENT
     // ==========================================
 
     // Update document's storage_path to point to latest version
@@ -1057,7 +1070,7 @@ export async function uploadDocumentVersion(
     }
 
     // ==========================================
-    // 8. REVALIDATE & RETURN
+    // 9. REVALIDATE & RETURN
     // ==========================================
 
     revalidatePath('/documents');

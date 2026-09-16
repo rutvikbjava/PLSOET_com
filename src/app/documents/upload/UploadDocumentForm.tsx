@@ -112,14 +112,20 @@ export default function UploadDocumentForm({
     try {
       setIsUploading(true);
 
+      // Create FormData
+      const formData = new FormData();
+      formData.append('title', title.trim());
+      formData.append('document_type', documentType.trim());
+      if (description.trim()) {
+        formData.append('description', description.trim());
+      }
+      if (departmentId) {
+        formData.append('department_id', departmentId);
+      }
+      formData.append('file', selectedFile);
+
       // Upload document
-      const result = await uploadDocument({
-        title: title.trim(),
-        document_type: documentType.trim(),
-        description: description.trim() || undefined,
-        department_id: departmentId || null,
-        file: selectedFile,
-      });
+      const result = await uploadDocument(formData);
 
       if (!result.success) {
         setError(result.error || 'Upload failed');
