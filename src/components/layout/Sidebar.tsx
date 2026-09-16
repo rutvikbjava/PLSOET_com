@@ -3,14 +3,15 @@
 /**
  * Sidebar Navigation Component
  * 
- * Responsive sidebar navigation with role-aware menu items.
+ * Professional side drawer navigation with education theme.
  * 
  * Features:
- * - Desktop: Always visible sidebar
- * - Mobile: Collapsible sidebar with overlay
- * - Keyboard navigation support
- * - Active route highlighting
+ * - Desktop: Fixed sidebar with gradient background
+ * - Mobile: Slide-in drawer with backdrop overlay
+ * - Smooth animations and transitions
+ * - Active route highlighting with accent color
  * - Role-based navigation filtering
+ * - Keyboard accessible
  */
 
 import Link from 'next/link';
@@ -34,39 +35,51 @@ export function Sidebar({ navigation, isOpen, onClose }: SidebarProps) {
   
   return (
     <>
-      {/* Mobile overlay */}
+      {/* Mobile overlay backdrop */}
       {isOpen && (
         <div
-          className="fixed inset-0 bg-gray-600 bg-opacity-75 z-20 lg:hidden"
+          className="fixed inset-0 bg-primary-900/80 backdrop-blur-sm z-40 lg:hidden transition-opacity duration-300"
           onClick={onClose}
           aria-hidden="true"
         />
       )}
       
-      {/* Sidebar */}
+      {/* Sidebar Drawer */}
       <aside
         className={`
-          fixed inset-y-0 left-0 z-30 w-64 bg-white border-r border-gray-200
+          fixed inset-y-0 left-0 z-50 w-72 bg-gradient-edu shadow-edu-xl
           transform transition-transform duration-300 ease-in-out
-          lg:translate-x-0 lg:static lg:z-0
+          lg:translate-x-0
           ${isOpen ? 'translate-x-0' : '-translate-x-full'}
         `}
       >
         <div className="flex flex-col h-full">
-          {/* Logo */}
-          <div className="flex items-center justify-between h-16 px-6 border-b border-gray-200">
+          {/* Logo Header */}
+          <div className="flex items-center justify-between h-20 px-6 border-b border-white/10">
             <Link
               href="/dashboard"
-              className="text-xl font-bold text-gray-900 hover:text-gray-700 transition-colors"
+              className="flex items-center gap-3 group"
+              onClick={() => onClose()}
             >
-              EduSphere AI
+              <div className="w-10 h-10 rounded-lg bg-accent-900 flex items-center justify-center shadow-lg transform group-hover:scale-110 transition-transform duration-200">
+                <span className="text-primary-900 font-display font-bold text-xl">E</span>
+              </div>
+              <div>
+                <span className="text-white font-display font-bold text-xl block leading-tight">
+                  EduSphere
+                </span>
+                <span className="text-accent-900 font-display font-medium text-xs">
+                  AI Platform
+                </span>
+              </div>
             </Link>
+            
             {/* Mobile close button */}
             <button
               type="button"
-              className="lg:hidden p-2 rounded-md text-gray-400 hover:text-gray-600 hover:bg-gray-100"
+              className="lg:hidden p-2 rounded-lg text-white/70 hover:text-white hover:bg-white/10 transition-colors"
               onClick={onClose}
-              aria-label="Close sidebar"
+              aria-label="Close navigation menu"
             >
               <svg
                 className="w-6 h-6"
@@ -84,8 +97,8 @@ export function Sidebar({ navigation, isOpen, onClose }: SidebarProps) {
             </button>
           </div>
           
-          {/* Navigation */}
-          <nav className="flex-1 px-4 py-6 space-y-1 overflow-y-auto" aria-label="Main navigation">
+          {/* Navigation Links */}
+          <nav className="flex-1 px-4 py-6 space-y-2 overflow-y-auto" aria-label="Main navigation">
             {navigation.map((item) => {
               const active = isActive(item);
               
@@ -93,34 +106,46 @@ export function Sidebar({ navigation, isOpen, onClose }: SidebarProps) {
                 <Link
                   key={item.href}
                   href={item.href}
-                  onClick={() => onClose()} // Close mobile menu on navigation
+                  onClick={() => onClose()}
                   className={`
-                    flex items-center px-3 py-2 text-sm font-medium rounded-md
-                    transition-colors
+                    flex items-center gap-3 px-4 py-3 text-sm font-medium rounded-lg
+                    transition-all duration-200
                     ${
                       active
-                        ? 'bg-blue-50 text-blue-700'
-                        : 'text-gray-700 hover:bg-gray-50 hover:text-gray-900'
+                        ? 'bg-accent-900 text-primary-900 shadow-lg transform scale-105'
+                        : 'text-white/90 hover:bg-white/10 hover:text-white hover:translate-x-1'
                     }
                   `}
                   aria-current={active ? 'page' : undefined}
                 >
-                  {/* Icon placeholder - can be enhanced with actual icons */}
+                  {/* Icon */}
                   {item.icon && (
-                    <span className="mr-3 text-lg" aria-hidden="true">
+                    <span className={`text-xl ${active ? 'transform scale-110' : ''}`} aria-hidden="true">
                       {getIconForName(item.icon)}
                     </span>
                   )}
-                  {item.label}
+                  <span className="flex-1">{item.label}</span>
+                  {/* Active indicator */}
+                  {active && (
+                    <div className="w-2 h-2 rounded-full bg-primary-900 animate-pulse" />
+                  )}
                 </Link>
               );
             })}
           </nav>
           
-          {/* Footer info */}
-          <div className="px-4 py-4 border-t border-gray-200">
-            <p className="text-xs text-gray-500 text-center">
-              EduSphere AI v1.0
+          {/* Footer */}
+          <div className="px-6 py-5 border-t border-white/10">
+            <div className="flex items-center gap-3 mb-3">
+              <div className="flex-1 h-px bg-white/20" />
+              <span className="text-white/40 text-xs font-medium">POWERED BY AI</span>
+              <div className="flex-1 h-px bg-white/20" />
+            </div>
+            <p className="text-xs text-white/60 text-center font-medium">
+              EduSphere AI v1.0.0
+            </p>
+            <p className="text-xs text-white/40 text-center mt-1">
+              © {new Date().getFullYear()} All Rights Reserved
             </p>
           </div>
         </div>
@@ -130,23 +155,34 @@ export function Sidebar({ navigation, isOpen, onClose }: SidebarProps) {
 }
 
 /**
- * Simple icon mapping
- * Returns emoji icons for now - can be replaced with icon library later
+ * Icon mapping with modern symbols
+ * Enhanced visual icons for better UX
  */
 function getIconForName(iconName: string): string {
   const icons: Record<string, string> = {
-    home: '🏠',
+    home: '🏛️',
+    dashboard: '📊',
     user: '👤',
+    users: '👥',
     file: '📄',
-    workflow: '🔄',
+    files: '📁',
+    document: '📄',
+    documents: '📚',
+    workflow: '⚡',
+    workflows: '🔄',
     policy: '📋',
+    policies: '📜',
     approval: '✅',
+    approvals: '✓',
     signature: '✍️',
+    signatures: '🖊️',
     notification: '🔔',
+    notifications: '💬',
     admin: '⚙️',
     audit: '📊',
     settings: '⚙️',
+    profile: '👤',
   };
   
-  return icons[iconName] || '•';
+  return icons[iconName] || '📌';
 }
