@@ -27,10 +27,10 @@ export function getEmailProvider(): EmailProvider {
   const hasResendApiKey = !!process.env.RESEND_API_KEY;
 
   if (hasResendApiKey) {
-    console.log('[EMAIL_PROVIDER] Using ResendEmailProvider (production)');
+    // Using ResendEmailProvider for production
     emailProviderInstance = new ResendEmailProvider();
   } else {
-    console.log('[EMAIL_PROVIDER] Using MockEmailProvider (development - no RESEND_API_KEY)');
+    // Using MockEmailProvider for development (no RESEND_API_KEY configured)
     emailProviderInstance = new MockEmailProvider();
   }
 

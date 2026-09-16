@@ -85,7 +85,7 @@ export const getUserProfile = cache(async (): Promise<UserProfile | null> => {
     return null;
   }
 
-  console.log('[getUserProfile] User authenticated:', user.id, user.email);
+  // User authenticated - proceeding to fetch profile
 
   const supabase = createClient();
 
@@ -111,7 +111,7 @@ export const getUserProfile = cache(async (): Promise<UserProfile | null> => {
     return null;
   }
 
-  console.log('[getUserProfile] Profile retrieved:', profile.id, profile.email);
+  // Profile retrieved successfully
   return profile as UserProfile;
 });
 

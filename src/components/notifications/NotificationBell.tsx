@@ -37,6 +37,7 @@ export function NotificationBell() {
     if (isOpen && notifications.length === 0) {
       loadRecentNotifications();
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isOpen]);
 
   async function loadUnreadCount() {
