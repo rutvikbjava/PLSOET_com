@@ -266,10 +266,18 @@ export async function uploadDocument(
       .single();
 
     if (docError || !document) {
-      console.error('[DOCUMENT_CREATE_ERROR]', docError);
+      console.error('[DOCUMENT_CREATE_ERROR]', {
+        error: docError,
+        code: docError?.code,
+        message: docError?.message,
+        details: docError?.details,
+        hint: docError?.hint,
+        institutionId,
+        userId,
+      });
       return {
         success: false,
-        error: 'Failed to create document',
+        error: `Failed to create document: ${docError?.message || 'Unknown error'}`,
       };
     }
 
