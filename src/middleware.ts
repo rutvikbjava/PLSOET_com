@@ -37,6 +37,30 @@ function isPublicRoute(pathname: string): boolean {
 }
 
 export async function middleware(request: NextRequest) {
+  // Validate environment variables
+  const supabaseUrl = appConfig.supabase.url;
+  const supabaseAnonKey = appConfig.supabase.anonKey;
+
+  if (!supabaseUrl || !supabaseAnonKey) {
+    console.error('[MIDDLEWARE_ERROR] Missing Supabase environment variables');
+    console.error('NEXT_PUBLIC_SUPABASE_URL:', supabaseUrl ? 'SET' : 'MISSING');
+    console.error('NEXT_PUBLIC_SUPABASE_ANON_KEY:', supabaseAnonKey ? 'SET' : 'MISSING');
+    
+    // Return error response
+    return new NextResponse(
+      JSON.stringify({
+        error: 'Configuration Error',
+        message: 'Missing required environment variables. Please contact the administrator.',
+      }),
+      {
+        status: 500,
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      }
+    );
+  }
+
   let response = NextResponse.next({
     request: {
       headers: request.headers,
@@ -45,8 +69,8 @@ export async function middleware(request: NextRequest) {
 
   // Create Supabase client with cookie handling
   const supabase = createServerClient(
-    appConfig.supabase.url,
-    appConfig.supabase.anonKey,
+    supabaseUrl,
+    supabaseAnonKey,
     {
       cookies: {
         get(name: string) {
