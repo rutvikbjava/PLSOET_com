@@ -26,19 +26,12 @@ SELECT public.get_user_institution_id() as institution_id_from_function;
 SELECT 
   i.id,
   i.name,
-  i.status,
-  i.type
+  i.code,
+  i.status
 FROM public.institutions i
 WHERE i.id = (SELECT institution_id FROM public.profiles WHERE id = auth.uid());
 
--- 5. Test if user can insert a document (dry run check)
--- This will show if RLS would allow the insert
-EXPLAIN (VERBOSE, COSTS OFF)
-SELECT * FROM public.documents 
-WHERE institution_id = public.get_user_institution_id()
-  AND created_by = auth.uid();
-
--- 6. Check storage bucket exists
+-- 5. Check storage bucket exists
 SELECT 
   id,
   name,
@@ -48,12 +41,13 @@ SELECT
 FROM storage.buckets 
 WHERE id = 'institutional-documents';
 
--- 7. Check storage policies
-SELECT 
-  policyname,
-  cmd,
-  qual
-FROM pg_policies 
-WHERE tablename = 'objects' 
-  AND schemaname = 'storage'
-  AND policyname LIKE '%institution%';
+-- 6. Check if helper functions exist
+SELECT routine_name 
+FROM information_schema.routines 
+WHERE routine_schema = 'public' 
+AND routine_name IN (
+  'get_user_institution_id',
+  'user_is_admin',
+  'get_user_role'
+);
+
