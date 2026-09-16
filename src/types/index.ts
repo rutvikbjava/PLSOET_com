@@ -1,11 +1,8 @@
 /**
  * Common type definitions for EduSphere AI
  * 
- * These types will grow as features are implemented.
- * This is the foundation for type safety across the application.
+ * These types include database schema types and application-specific types.
  */
 
-// Placeholder for future types
-// Will include: User, Institution, Department, Document, Workflow, etc.
-
-export type {};
+// Re-export all database types
+export * from './database';

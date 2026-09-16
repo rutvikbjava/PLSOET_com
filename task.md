@@ -1,659 +1,1397 @@
-You are continuing the EduSphere AI production build.
+We are now proceeding to EDU-010.
 
 IMPORTANT:
-This project is now initialized and the required application code has been pushed to the Git repository.
+This is an EXISTING production-oriented project.
+EDU-001 through EDU-009 have already been implemented according to the project state files.
 
-The repository should contain ONLY files required to build, test, deploy, and maintain the application.
+Do NOT rebuild previous work.
+Do NOT start EDU-011 or any later task.
+Do NOT reduce the scope.
+Do NOT create task-specific completion-report Markdown files.
+Do NOT ask me to choose implementation options.
 
-The AI project-memory Markdown files may be maintained locally outside Git according to the user's repository policy.
+Your job is to implement the COMPLETE EDU-010 scope, verify it honestly, and update the project's existing memory/state files.
 
-Before doing anything, read the locally available project-state files:
+==================================================
+
+1. REQUIRED MEMORY READING
+   ==================================================
+
+Before making ANY change, read these files in this exact order:
 
 1. 01_AI_BUILD_RULES.md
 2. PROJECT_MEMORY.md
 3. PROGRESS.md
 4. ERROR_LOG.md
 5. PROJECT_CONTEXT.md
+6. task.md
 
-If these files are not available locally, STOP and tell me that the project-state files are missing. Do not invent project history.
+Then inspect the actual repository.
 
-==================================================
-TASK
-==================================================
-
-TASK ID: EDU-003
-
-TASK NAME:
-
-Configure Supabase for Production Development
+The state files are project memory, NOT unquestionable truth.
+Verify important claims against the actual implementation.
 
 ==================================================
-OBJECTIVE
-==================================================
+2. PREREQUISITE VERIFICATION
+============================
 
-Connect the freshly initialized EduSphere AI application to Supabase using a production-safe architecture.
+Verify that EDU-009 is actually complete.
 
-This task is ONLY about establishing the Supabase foundation.
+Inspect the real implementation of:
 
-DO NOT implement the complete database schema yet.
+* workflow definitions
+* workflow versions
+* workflow instances
+* workflow steps
+* workflow execution engine
+* action registry
+* workflow authorization
+* workflow validation
+* AI workflow generation
+* policy/context dependencies
+* authentication
+* RLS
+* audit infrastructure
 
-DO NOT implement authentication yet.
+If EDU-009 is PARTIAL or BLOCKED:
 
-DO NOT implement workflow functionality yet.
+STOP and report the exact blocker.
 
-DO NOT implement the policy engine yet.
-
-Those will be separate tasks.
-
-==================================================
-1. INSPECT THE CURRENT PROJECT FIRST
-==================================================
-
-Before changing anything, inspect:
-
-- package.json
-- lockfile
-- src/
-- app/
-- lib/
-- config/
-- existing environment configuration
-- .gitignore
-- README.md
-- existing Supabase-related files
-
-Determine:
-
-- framework
-- package manager
-- current environment strategy
-- whether Supabase dependencies already exist
-- whether any Supabase code already exists
-
-Do not reinstall dependencies unnecessarily.
+Do not silently build EDU-010 on an incomplete foundation.
 
 ==================================================
-2. SUPABASE ARCHITECTURE
-==================================================
+3. EDU-010 OBJECTIVE
+====================
 
-Establish a clean architecture for:
+Implement:
 
-Browser
-   ↓
-Browser-safe Supabase client
+APPROVALS + SIGNATURES + NOTIFICATIONS + AUDIT
 
-Server
-   ↓
-Server Supabase client
-   ↓
-Authenticated user/session
-   ↓
-PostgreSQL
+The architecture should extend the existing workflow system:
 
-Privileged server operations, if required later:
-
-Server-only code
-   ↓
-Service-role Supabase client
+Workflow
+↓
+Workflow Step
+↓
+Approval / Signature Requirement
+↓
+Authorized Actor
+↓
+Decision / Signature
+↓
+Notification
+↓
+Audit Event
 
 IMPORTANT:
 
-The service-role key MUST NEVER reach browser/client code.
+Reuse the existing workflow engine.
 
-Do not expose it through:
-- NEXT_PUBLIC_ variables
-- client components
-- browser bundles
-- API responses
-- logs
+Do NOT create a second workflow engine.
 
-==================================================
-3. INSTALL REQUIRED DEPENDENCIES
-==================================================
+Reuse the existing audit architecture.
 
-Install only the dependencies actually required for the chosen Supabase architecture.
-
-Prefer the official Supabase JavaScript ecosystem and framework-compatible packages.
-
-Do not install:
-
-- unrelated ORM libraries
-- multiple database clients
-- unnecessary state-management libraries
-- unnecessary Supabase wrappers
-
-Every dependency added must have a clear purpose.
-
-Record important dependency decisions in PROJECT_MEMORY.md.
+Do NOT create a second audit system.
 
 ==================================================
-4. ENVIRONMENT VARIABLES
-==================================================
+4. FIRST: INSPECT EXISTING SCHEMA
+=================================
 
-Establish the environment-variable structure.
+Before creating migrations, inspect existing tables for:
 
-At minimum distinguish between:
+* approvals
+* signatures
+* notifications
+* audit
+* workflow steps
+* workflow instances
+* users
+* roles
+* institutions
+* policies
+* documents
 
-PUBLIC:
+EDU-004 may already contain approval/audit foundations.
 
-NEXT_PUBLIC_SUPABASE_URL
+EDU-009 may already contain workflow execution structures.
 
-NEXT_PUBLIC_SUPABASE_ANON_KEY
+Reuse existing structures where appropriate.
 
-SERVER ONLY:
+Do NOT create duplicate tables.
 
-SUPABASE_SERVICE_ROLE_KEY
+If existing structures are insufficient:
 
-Use the appropriate variable names for the project's implementation.
+create NEW migrations.
 
-IMPORTANT:
-
-Do not place real credentials into source code.
-
-Do not place real credentials into:
-
-- README.md
-- PROJECT_MEMORY.md
-- PROJECT_CONTEXT.md
-- PROGRESS.md
-- ERROR_LOG.md
-- Git
-- client-side source code
-
-Only variable names and safe descriptions may be documented.
+Never rewrite historical migrations that may already have been applied.
 
 ==================================================
-5. UPDATE .GITIGNORE
-==================================================
+5. APPROVAL DOMAIN
+==================
 
-Verify that Git ignores sensitive/local files.
+Design a proper approval model.
 
-At minimum ensure appropriate patterns exist for:
+An approval should be associated with:
 
-.env
-.env.local
-.env.*.local
-.env.production
-node_modules
-.next
-coverage
-logs
-OS/editor temporary files
+* institution
+* workflow instance where applicable
+* workflow step where applicable
+* approval request
+* requested actor/role/capability
+* status
+* decision
+* requester
+* approver
+* timestamps
+* optional reason/comment
+* expiration where required
 
-Do not blindly add patterns that would ignore required source files.
+Use controlled statuses.
 
-The repository must continue containing all files necessary to build the application.
+At minimum evaluate:
 
-==================================================
-6. CREATE SUPABASE CLIENT ARCHITECTURE
-==================================================
+PENDING
+APPROVED
+REJECTED
+CANCELLED
+EXPIRED
 
-Create a clean Supabase integration.
-
-Use separate boundaries where appropriate for:
-
-### Browser client
-
-Used by browser-safe client-side functionality.
-
-### Server client
-
-Used by server-side application functionality and authenticated operations.
-
-### Admin/service-role client
-
-Only create this abstraction if the project actually needs privileged operations.
-
-If created:
-
-- it must be server-only
-- it must never be imported into client components
-- it must never expose the service-role key
-- it must not bypass authorization casually
-
-Document the security implications.
+Use only states required by the PRD.
 
 ==================================================
-7. TYPE SAFETY
-==================================================
+6. APPROVAL STATE MACHINE
+=========================
 
-Prepare the application for strongly typed Supabase database access.
+Implement explicit approval transitions.
 
-If database types can be generated safely at this stage:
+For example:
 
-set up the generation workflow.
+PENDING → APPROVED
+PENDING → REJECTED
+PENDING → CANCELLED
+PENDING → EXPIRED
 
-However:
+Reject invalid transitions.
 
-DO NOT create the final EduSphere database schema yet.
+Do not allow arbitrary client-side status updates.
 
-Do not invent the complete database schema just to generate types.
-
-The schema will be created in EDU-004.
-
-If type generation must wait until migrations exist, document that clearly.
-
-==================================================
-8. SUPABASE CLI
-==================================================
-
-Determine whether the Supabase CLI should be used for this project.
-
-For a production-grade project, establish a migration-based workflow.
-
-If the CLI is appropriate:
-
-- initialize Supabase project configuration
-- establish local development configuration
-- establish migrations directory
-- document how migrations will be created/applied
-
-Do not push arbitrary schema changes directly to production.
-
-Do not create the full schema yet.
+Authorization must be checked server-side.
 
 ==================================================
-9. LOCAL DEVELOPMENT STRATEGY
-==================================================
+7. APPROVAL AUTHORIZATION
+=========================
 
-Establish a reproducible development strategy.
+Approval authority must be deterministic.
 
-Document:
+Do NOT allow the AI or browser to decide who is authorized to approve.
 
-- how developers connect to the Supabase project
-- how environment variables are configured
-- how migrations will be applied
-- how local development differs from production
-- how test data will eventually be handled
+The server must determine authorization from:
 
-Do not create production data.
+* authenticated user
+* institution
+* role
+* capability/permission
+* workflow requirement
+* policy rules where applicable
 
-Do not insert fake production users.
+A user must never be able to approve their own request if the product rules prohibit self-approval.
 
-==================================================
-10. SUPABASE PROJECT CONNECTION
-==================================================
-
-If the user has already created a Supabase project and provided credentials through environment variables:
-
-verify connectivity safely.
-
-If credentials are NOT available:
-
-DO NOT fabricate credentials.
-
-Set up the integration and report exactly what the user must configure.
-
-Never ask the user to paste secrets into chat if they can put them into their local environment.
-
-The preferred approach is:
-
-.env.local
-
-with the required variables.
+Implement separation-of-duties where the PRD requires it.
 
 ==================================================
-11. DATABASE CONNECTION TEST
-==================================================
+8. APPROVAL REQUEST CREATION
+============================
 
-Create a minimal safe connectivity verification.
+Approval requests may originate from workflow execution.
 
-The test should confirm that the application can communicate with Supabase.
+The workflow engine should be able to create an approval requirement.
 
-Do NOT create application tables yet.
+The approval system should return a persisted state such as:
 
-Do NOT create production data.
+WAITING_FOR_APPROVAL
 
-Do NOT bypass RLS.
+to the workflow engine where appropriate.
 
-If there is no database table available yet, use an appropriate minimal connectivity/configuration check rather than inventing application data.
+Do not block a serverless request while waiting for a human.
 
-==================================================
-12. SECURITY VERIFICATION
-==================================================
-
-Perform a security review specifically for the Supabase integration.
-
-Verify:
-
-[ ] service-role key is server-only
-[ ] public keys are the only keys exposed to browser code
-[ ] .env files are ignored
-[ ] secrets are not committed
-[ ] secrets are not logged
-[ ] browser client and server client are separated appropriately
-[ ] privileged client cannot be imported into client-side code
-[ ] no database authorization is being bypassed
-[ ] no hardcoded Supabase credentials exist
-
-If possible, inspect the resulting client bundle/build configuration to ensure secrets are not exposed.
+The workflow must persist its state and resume after approval.
 
 ==================================================
-13. VERCEL COMPATIBILITY
-==================================================
+9. APPROVAL RESUMPTION
+======================
 
-Ensure the Supabase integration is compatible with Vercel.
+When an approval is:
 
-Do not deploy yet.
+APPROVED
 
-Verify that:
+the workflow should resume from the appropriate waiting step.
 
-- environment variables can be configured through Vercel
-- server-only variables remain server-only
-- browser variables use the appropriate public prefix
-- build does not depend on local-only files
-- runtime configuration is documented
+When:
 
-Do not add Vercel secrets to Git.
+REJECTED
 
-==================================================
-14. README
-==================================================
+the workflow should follow its defined rejection path.
 
-Update README.md with a concise Supabase setup section.
+Do not hardcode every workflow's behavior into the approval service.
 
-Include:
-
-1. Create/configure Supabase project
-2. Required environment variables
-3. Local development configuration
-4. Migration strategy
-5. Important security warning
-
-NEVER include actual credentials.
+Use the workflow definition/state machine.
 
 ==================================================
-15. STATE FILES
-==================================================
+10. MULTIPLE APPROVERS
+======================
 
-Update:
+Inspect the PRD and workflow architecture for support for:
 
-PROJECT_MEMORY.md
-PROGRESS.md
-ERROR_LOG.md
-PROJECT_CONTEXT.md
+* single approver
+* multiple approvers
+* sequential approval
+* parallel approval
+* any/all approval requirements
 
-Remember:
+Implement only the models actually required.
 
-These Markdown files are project-memory files.
+If multiple approval semantics are required, represent them explicitly and deterministically.
 
-The user has chosen not to push them to the Git repository.
-
-Therefore:
-
-- maintain them locally
-- DO NOT force-add them to Git
-- DO NOT commit them
-- DO NOT modify .gitignore to force them into the repository
-
-If they are already tracked in Git, report that before changing anything.
+Never infer them dynamically from AI output at execution time.
 
 ==================================================
-16. TASK STATE
-==================================================
+11. APPROVAL COMMENTS
+=====================
 
-Update:
+Support an optional decision reason/comment where required.
 
-EDU-003
+Do not allow comments to overwrite historical decisions.
 
-During implementation:
-
-IN_PROGRESS
-
-After successful verification:
-
-COMPLETE
-
-If Supabase credentials are unavailable but the code foundation is complete:
-
-PARTIAL
-
-Do not mark COMPLETE if actual required verification cannot be performed.
+Approval decisions should be append-only or otherwise preserve a complete history.
 
 ==================================================
-17. ERROR PROTOCOL
+12. SIGNATURE DOMAIN
+====================
+
+Implement the signature foundation required by EDU-010.
+
+A signature record should be able to identify:
+
+* institution
+* signer
+* signing request
+* related workflow/step
+* document/version where applicable
+* signature status
+* requested timestamp
+* signed timestamp
+* signature metadata
+* audit reference
+
+Do NOT claim this is a legally compliant digital-signature system unless the PRD explicitly requires and the implementation actually provides that level of compliance.
+
 ==================================================
+13. SIGNATURE SECURITY
+======================
 
-If any error occurs:
+Never treat:
 
-Create:
+"clicking a button"
 
-ERR-XXX
+as sufficient proof of a legally binding signature unless the product requirements explicitly define that behavior.
+
+Use clear terminology such as:
+
+* electronic acknowledgment
+* approval confirmation
+* signature intent
+
+where legally appropriate.
+
+Protect signature records from unauthorized modification.
+
+Historical signatures must remain explainable.
+
+==================================================
+14. SIGNATURE IMMUTABILITY
+==========================
+
+Once a signature is completed:
+
+do not allow ordinary UPDATE/DELETE operations to rewrite the historical signing event.
+
+If corrections are required:
+
+create a new event/record according to the architecture.
+
+Never silently mutate historical signatures.
+
+==================================================
+15. DOCUMENT VERSION BINDING
+============================
+
+If a signature relates to a document:
+
+bind it to the exact document version.
 
 Example:
 
-ERR-001
+Document
+├── Version 1
+├── Version 2
+└── Version 3
 
-Record:
+Signature A must identify exactly which version was signed.
 
-- exact error
-- task
-- environment
-- reproduction
-- root cause
-- attempted solution
-- final solution
-- files changed
-- verification
-- prevention
-
-Link the error to EDU-003.
-
-If the error reveals a reusable security or architecture lesson:
-
-update PROJECT_MEMORY.md.
+Do not allow a later document version to silently replace the signed content.
 
 ==================================================
-18. DECISION PROTOCOL
+16. SIGNATURE WORKFLOW
+======================
+
+Integrate signatures with the workflow engine.
+
+Example:
+
+Workflow
+→ Prepare Document
+→ Request Approval
+→ Request Signature
+→ Complete
+
+A signature requirement should be represented as a controlled workflow action/step.
+
+Do NOT create a separate execution mechanism.
+
 ==================================================
+17. NOTIFICATION DOMAIN
+=======================
 
-If an important Supabase architectural decision is made:
+Implement a notification foundation.
 
-create:
+Notifications should support at least the channels required by the PRD.
 
-DEC-XXX
+Evaluate:
 
-Record:
+* in-app
+* email
 
-- decision
-- reason
-- alternatives
-- consequences
-- related task
+Do not implement SMS/push/etc. unless explicitly required.
+
+==================================================
+18. NOTIFICATION MODEL
+======================
+
+A notification should record:
+
+* institution
+* recipient
+* notification type
+* title
+* message
+* related entity
+* related workflow/approval/signature
+* delivery status
+* read status where applicable
+* created timestamp
+* delivered timestamp
+* failure information where appropriate
+
+Do not put sensitive information into notification payloads unnecessarily.
+
+==================================================
+19. NOTIFICATION TEMPLATES
+==========================
+
+Create a clean notification-template abstraction where needed.
+
+Do not hardcode dozens of message strings throughout server actions.
+
+Notification types should be deterministic.
 
 Examples:
 
-DEC-004 — Supabase client architecture
-DEC-005 — Supabase migration strategy
+APPROVAL_REQUESTED
+APPROVAL_APPROVED
+APPROVAL_REJECTED
+SIGNATURE_REQUESTED
+SIGNATURE_COMPLETED
+WORKFLOW_FAILED
 
-Only create IDs for decisions that actually occur.
-
-==================================================
-19. DO NOT BUILD THE DATABASE YET
-==================================================
-
-This is extremely important.
-
-DO NOT create:
-
-- institutions table
-- profiles table
-- departments table
-- documents table
-- policies table
-- workflows table
-- approvals table
-- signatures table
-- notifications table
-- audit table
-
-Those belong to:
-
-EDU-004 — Design and Implement Database Schema
-
-EDU-003 only establishes Supabase infrastructure and integration.
+Use the actual PRD terminology where specified.
 
 ==================================================
-20. DO NOT IMPLEMENT AUTHENTICATION YET
-==================================================
+20. NOTIFICATION SECURITY
+=========================
 
-Do not implement:
+Never send notification content to users who are not authorized to see the underlying event.
 
-- login
-- signup
-- password reset
-- OAuth
-- role management
-- protected dashboard routes
+A notification must not become a cross-tenant information leak.
 
-Those belong to later tasks.
+Verify recipient authorization server-side.
 
-You may prepare the architecture so authentication can be added cleanly.
+Do not trust browser-supplied recipient IDs.
 
 ==================================================
-21. VERIFICATION
-==================================================
+21. EMAIL PROVIDER
+==================
 
-Run all applicable checks:
+Inspect the project's existing dependencies and architecture before selecting an email provider.
 
-1. dependency installation
-2. lint
-3. typecheck
-4. tests
-5. production build
-6. Supabase connectivity/configuration verification
-7. secret exposure review
+If the PRD specifies a provider, use it.
 
-Use the actual project commands.
+Otherwise create a provider abstraction rather than tightly coupling the application to one provider.
 
-If something fails:
+For example:
 
-fix it and run the check again.
+Notification Service
+↓
+Email Provider
+↓
+Provider Implementation
 
-Do not suppress errors without understanding them.
+Do not expose provider API keys to the browser.
 
-==================================================
-22. ACCEPTANCE CRITERIA
-==================================================
+If no provider is configured:
 
-EDU-003 can be marked COMPLETE only if:
+implement a safe development/mock mode.
 
-[ ] Supabase integration architecture established
-[ ] required dependencies installed
-[ ] browser client configured
-[ ] server client configured
-[ ] service-role abstraction secured if required
-[ ] environment variables documented
-[ ] .env files protected by .gitignore
-[ ] no secrets committed
-[ ] no secrets exposed to browser
-[ ] Supabase configuration documented
-[ ] migration strategy established
-[ ] database schema intentionally NOT implemented yet
-[ ] authentication intentionally NOT implemented yet
-[ ] Vercel compatibility considered
-[ ] README updated
-[ ] lint passes
-[ ] typecheck passes
-[ ] tests pass
-[ ] production build passes
-[ ] state files updated
-[ ] errors recorded
-[ ] decisions recorded
-[ ] next task identified
+Do not pretend real email delivery was tested.
 
 ==================================================
-23. GIT VERIFICATION
-==================================================
+22. NOTIFICATION DELIVERY
+=========================
 
-Before finishing, inspect:
+Notification delivery must be resilient.
+
+Record:
+
+* pending
+* sent
+* failed
+
+where appropriate.
+
+Implement bounded retry behavior for transient delivery failures.
+
+Do not create infinite retry loops.
+
+Do not mark an email as SENT before the provider confirms successful submission.
+
+==================================================
+23. IDEMPOTENCY
+===============
+
+Notification delivery must be idempotent.
+
+If the same event is processed twice:
+
+do not unintentionally send duplicate notifications.
+
+Use deterministic event/notification IDs or appropriate unique constraints.
+
+==================================================
+24. AUDIT INTEGRATION
+=====================
+
+Reuse the existing audit system.
+
+Audit important events including:
+
+APPROVAL_REQUESTED
+APPROVAL_APPROVED
+APPROVAL_REJECTED
+APPROVAL_CANCELLED
+APPROVAL_EXPIRED
+SIGNATURE_REQUESTED
+SIGNATURE_COMPLETED
+SIGNATURE_REJECTED/FAILED where applicable
+NOTIFICATION_CREATED
+NOTIFICATION_SENT
+NOTIFICATION_FAILED
+WORKFLOW_WAITING
+WORKFLOW_RESUMED
+
+Use the actual event vocabulary from the existing project where possible.
+
+Do not create a parallel audit table merely for EDU-010.
+
+==================================================
+25. AUDIT IMMUTABILITY
+======================
+
+Audit records must be append-only.
+
+Do not provide normal UPDATE/DELETE functionality for historical audit events.
+
+Do not allow clients to fabricate audit events.
+
+Audit actor identity must come from trusted server-side authentication/context.
+
+==================================================
+26. AUDIT DATA MINIMIZATION
+===========================
+
+Audit events should contain enough information to reconstruct what happened without storing unnecessary sensitive information.
+
+Do NOT log:
+
+* passwords
+* API keys
+* service-role keys
+* full confidential documents
+* raw secrets
+* unnecessary AI prompts
+* sensitive tokens
+
+Use metadata/references instead of copying large payloads.
+
+==================================================
+27. WORKFLOW + APPROVAL INTEGRATION
+===================================
+
+Integrate approval waiting into EDU-009.
+
+Expected conceptual flow:
+
+Workflow Instance
+↓
+Approval Step
+↓
+Approval Request
+↓
+Workflow = WAITING
+↓
+Human Decision
+↓
+Approval Result
+↓
+Workflow resumes
+↓
+Next Step
+
+Do not use polling loops inside serverless requests.
+
+==================================================
+28. WORKFLOW + SIGNATURE INTEGRATION
+====================================
+
+Expected conceptual flow:
+
+Workflow Instance
+↓
+Signature Step
+↓
+Signature Request
+↓
+Workflow = WAITING
+↓
+Signer completes
+↓
+Signature recorded
+↓
+Workflow resumes
+↓
+Next Step
+
+Persist all state.
+
+==================================================
+29. WORKFLOW + NOTIFICATION INTEGRATION
+=======================================
+
+Notifications should be triggered by domain events rather than random UI behavior.
+
+For example:
+
+Approval Requested
+↓
+Domain Event
+↓
+Notification Service
+↓
+In-App Notification
++
+Email Notification
+
+Do not make the browser responsible for critical notification creation.
+
+==================================================
+30. AUTHORIZATION
+=================
+
+Every server-side entry point must verify:
+
+* authentication
+* institution membership
+* required role/capability
+* target resource ownership
+* action authorization
+
+Do not rely on:
+
+* hidden UI buttons
+* client-side role checks
+* browser-provided institution IDs
+* browser-provided approver IDs
+
+==================================================
+31. TENANT ISOLATION
+====================
+
+Institution A must never be able to:
+
+* read Institution B approvals
+* approve Institution B requests
+* read Institution B signatures
+* read Institution B notifications
+* read Institution B audit records
+* trigger actions on Institution B workflows
+
+Implement and verify RLS.
+
+==================================================
+32. RLS
+=======
+
+For every new institution-scoped table:
+
+* enable RLS
+* define appropriate SELECT policies
+* define appropriate INSERT policies
+* define appropriate UPDATE policies
+* define appropriate DELETE policies
+
+For immutable tables:
+
+do not provide normal UPDATE/DELETE access.
+
+Test cross-tenant isolation.
+
+==================================================
+33. SELF-APPROVAL / CONFLICT CHECKS
+===================================
+
+Where required by the PRD:
+
+prevent:
+
+Requester = Approver
+
+or otherwise enforce separation-of-duties.
+
+Do not implement this solely in the UI.
+
+Enforce server-side.
+
+==================================================
+34. EXPIRATION
+==============
+
+If approvals/signatures expire:
+
+define deterministic expiration behavior.
+
+Do not rely on a user opening the page to detect expiration.
+
+The system should evaluate expiration when relevant operations occur.
+
+If background scheduling is required and unavailable:
+
+document the Vercel-compatible strategy.
+
+Do not pretend a persistent worker exists.
+
+==================================================
+35. CONCURRENCY
+===============
+
+Approval decisions must be concurrency-safe.
+
+If two requests attempt:
+
+APPROVE
+and
+REJECT
+
+at approximately the same time:
+
+only one valid terminal decision should win according to the defined state machine.
+
+Use atomic/database-level protection.
+
+Do not rely only on application-level "if status == PENDING" checks.
+
+==================================================
+36. SIGNATURE CONCURRENCY
+=========================
+
+Similarly, two simultaneous signing attempts must not create contradictory completed signatures.
+
+Use appropriate database constraints/state transitions.
+
+==================================================
+37. NOTIFICATION CONCURRENCY
+============================
+
+Prevent duplicate notification delivery caused by:
+
+* retries
+* repeated workflow events
+* duplicate HTTP requests
+* concurrent workers
+
+Use persistent idempotency controls.
+
+==================================================
+38. API / SERVER ACTIONS
+========================
+
+Implement secure server-side operations for:
+
+* create approval request
+* retrieve approval
+* approve
+* reject
+* cancel
+* create signature request
+* complete signature
+* reject/cancel signature where applicable
+* retrieve notifications
+* mark notification read
+* notification delivery processing
+* retrieve relevant audit history
+
+Use the project's established server-action/API conventions.
+
+==================================================
+39. UI — APPROVALS
+==================
+
+Implement appropriate interfaces for:
+
+* pending approvals
+* approval detail
+* approve
+* reject
+* decision reason/comment
+* status
+* requester
+* relevant workflow/document information
+
+Handle:
+
+* loading
+* empty
+* error
+* unauthorized
+* expired
+* already decided
+
+Do not expose unauthorized approval actions.
+
+==================================================
+40. UI — SIGNATURES
+===================
+
+Implement appropriate interfaces for:
+
+* pending signature requests
+* signature detail
+* document/version being signed
+* signer identity
+* signing action
+* completed status
+* failure/cancellation state
+
+Clearly communicate what the user is confirming.
+
+Do not use misleading legal language.
+
+==================================================
+41. UI — NOTIFICATIONS
+======================
+
+Implement an in-app notification interface where required.
+
+Support:
+
+* unread state
+* read state
+* notification detail/link
+* empty state
+* safe navigation to related resource
+
+Do not leak sensitive content in notification previews.
+
+==================================================
+42. UI — AUDIT
+==============
+
+Expose audit history only to authorized users.
+
+Provide useful information such as:
+
+* event
+* actor
+* timestamp
+* target
+* status
+* relevant metadata
+
+Do not expose secrets or unnecessary sensitive payloads.
+
+==================================================
+43. ACCESSIBILITY
+=================
+
+Approval/signature/notification interfaces must support:
+
+* keyboard navigation
+* semantic labels
+* focus states
+* accessible dialogs
+* accessible status indicators
+* clear validation messages
+* screen-reader-friendly controls
+
+Do not use color alone to communicate status.
+
+==================================================
+44. RESPONSIVE DESIGN
+=====================
+
+Verify:
+
+* mobile
+* tablet
+* desktop
+
+especially for:
+
+* approval actions
+* signature confirmation
+* notification center
+* audit tables
+
+==================================================
+45. ERROR HANDLING
+==================
+
+Handle:
+
+* approval not found
+* unauthorized approval
+* already decided
+* expired approval
+* invalid transition
+* signature not found
+* unauthorized signer
+* duplicate signature
+* notification failure
+* email provider failure
+* audit failure
+* database failure
+* concurrency conflict
+
+User-facing errors must be safe.
+
+Never expose internal stack traces or secrets.
+
+==================================================
+46. TRANSACTIONAL CONSISTENCY
+=============================
+
+Where an action changes multiple pieces of critical state, use appropriate database transactions/atomic operations.
+
+Examples:
+
+Approval decision
++
+Workflow state transition
++
+Audit event
+
+Signature completion
++
+Workflow state transition
++
+Audit event
+
+Do not leave the system in contradictory states.
+
+If the existing architecture prevents a single transaction across services:
+
+document the consistency strategy explicitly.
+
+==================================================
+47. VERCEL COMPATIBILITY
+========================
+
+The implementation must work with the project's target architecture.
+
+Do not rely on:
+
+* persistent in-memory workers
+* local durable files
+* long-running HTTP requests waiting for humans
+* process-level queues
+
+If asynchronous delivery requires an external service:
+
+create a provider abstraction and document the integration requirement.
+
+==================================================
+48. DATABASE MIGRATIONS
+=======================
+
+Create only NEW migrations.
+
+Every migration must be:
+
+* ordered
+* reproducible
+* reversible where practical
+* compatible with existing schema
+* properly indexed
+* constrained
+* tenant-aware
+
+Do not modify old migration history merely to make the current implementation easier.
+
+==================================================
+49. TESTING — APPROVALS
+=======================
+
+Test:
+
+[ ] create approval
+[ ] authorized approval
+[ ] unauthorized approval rejected
+[ ] approve
+[ ] reject
+[ ] cancel
+[ ] invalid transition rejected
+[ ] duplicate decision prevented
+[ ] concurrent decision handled
+[ ] self-approval prevented where required
+[ ] expiration handled
+[ ] audit generated
+
+==================================================
+50. TESTING — SIGNATURES
+========================
+
+Test:
+
+[ ] create signature request
+[ ] authorized signer
+[ ] unauthorized signer rejected
+[ ] signature completion
+[ ] duplicate completion prevented
+[ ] historical signature immutable
+[ ] exact document version preserved
+[ ] concurrency handled
+[ ] audit generated
+
+==================================================
+51. TESTING — NOTIFICATIONS
+===========================
+
+Test:
+
+[ ] notification created
+[ ] correct recipient
+[ ] unauthorized recipient prevented
+[ ] unread/read behavior
+[ ] duplicate delivery prevented
+[ ] failed delivery recorded
+[ ] retry behavior bounded
+[ ] mock provider works
+[ ] real provider tested only if configured
+
+==================================================
+52. TESTING — AUDIT
+===================
+
+Test:
+
+[ ] important domain events audited
+[ ] actor identity correct
+[ ] tenant isolation
+[ ] audit records immutable
+[ ] clients cannot fabricate actor identity
+[ ] secrets not recorded
+
+==================================================
+53. RLS SECURITY TESTING
+========================
+
+Verify:
+
+Institution A → Institution A data = ALLOW
+
+Institution A → Institution B data = DENY
+
+Test:
+
+* approvals
+* signatures
+* notifications
+* audit
+* workflow integration
+
+If a connected Supabase environment is unavailable:
+
+mark the tests:
+
+NOT RUN / BLOCKED
+
+Do not claim they passed.
+
+==================================================
+54. TEST HONESTY
+================
+
+Never claim a test passed unless it actually ran.
+
+Use exactly:
+
+PASS
+FAIL
+NOT RUN
+BLOCKED
+
+where applicable.
+
+==================================================
+55. BUILD VERIFICATION
+======================
+
+Run the project's actual commands.
+
+At minimum:
+
+npm run typecheck
+npm run lint
+npm test
+npm run build
+
+If a different test command exists, use the actual project command.
+
+Fix genuine failures.
+
+Rerun after fixes.
+
+==================================================
+56. ERROR MEMORY
+================
+
+Whenever a meaningful error occurs:
+
+record it in ERROR_LOG.md.
+
+Use the next available ERR-XXX ID.
+
+Each error must contain:
+
+* ID
+* Task
+* Error
+* Root cause
+* Solution
+* Files affected
+* Verification
+
+Do not write:
+
+"Errors: None"
+
+if meaningful errors occurred and were fixed.
+
+==================================================
+57. DECISION MEMORY
+===================
+
+Use the next available DEC-XXX IDs.
+
+Record only actual architectural decisions made during EDU-010.
+
+Potential examples:
+
+* approval state machine
+* separation-of-duties strategy
+* signature immutability
+* document-version binding
+* notification provider abstraction
+* notification idempotency
+* audit integration
+* event-driven notification strategy
+* concurrency strategy
+
+Do not invent decisions.
+
+==================================================
+58. PROJECT MEMORY UPDATES
+==========================
+
+Update all four required state files:
+
+PROJECT_MEMORY.md
+PROGRESS.md
+PROJECT_CONTEXT.md
+ERROR_LOG.md
+
+Keep them consistent.
+
+Every major change should be traceable.
+
+Use cross-references such as:
+
+Task:
+EDU-010
+
+Decision:
+DEC-XXX
+
+Error:
+ERR-XXX
+
+Related implementation:
+[path]
+
+Next activity:
+read [specific state/task section]
+
+==================================================
+59. NO EXTRA MEMORY FILES
+=========================
+
+Do NOT create:
+
+EDU-010_COMPLETION_REPORT.md
+
+Do NOT create:
+
+EDU-010_STATUS.md
+
+Do NOT create:
+
+EDU-010_NOTES.md
+
+Do NOT create any other task-specific Markdown report.
+
+Use the existing state files.
+
+==================================================
+60. README
+==========
+
+Update README.md with the actual EDU-010 architecture.
+
+Document:
+
+* approval system
+* signature system
+* notification system
+* audit integration
+* state transitions
+* security
+* RLS
+* provider configuration
+* Vercel considerations
+* testing
+
+Do not document functionality that does not actually exist.
+
+==================================================
+61. GIT HYGIENE
+===============
+
+Run:
 
 git status
 
-and verify that:
+Verify no:
 
-- secrets are NOT staged
-- .env files are NOT tracked
-- node_modules is NOT tracked
-- .next is NOT tracked
-- local AI Markdown memory files are NOT tracked if that is the user's chosen repository policy
-- required application files remain tracked
+* .env
+* secrets
+* node_modules
+* .next
+* temporary files
+* debug files
+* generated junk
+* task-specific completion report
 
-Do NOT use:
+are added to the repository.
 
-git add -f
-
-to force excluded files into the repository.
-
-Do not rewrite Git history unless explicitly requested.
+Keep the repository production-clean.
 
 ==================================================
-24. FINAL REPORT
+62. FINAL ACCEPTANCE CRITERIA
+=============================
+
+EDU-010 can be marked COMPLETE only when the applicable requirements are actually implemented and verified:
+
+[ ] EDU-009 verified complete
+[ ] approval domain implemented
+[ ] approval state machine implemented
+[ ] approval authorization enforced
+[ ] approval concurrency handled
+[ ] approval audit integrated
+[ ] signature domain implemented
+[ ] signature authorization enforced
+[ ] signature immutability implemented
+[ ] exact document version binding implemented where applicable
+[ ] signature workflow integration implemented
+[ ] notification domain implemented
+[ ] notification recipient security enforced
+[ ] notification provider abstraction implemented
+[ ] delivery state implemented
+[ ] notification idempotency implemented
+[ ] bounded retry implemented
+[ ] audit integrated
+[ ] audit immutability preserved
+[ ] workflow waiting/resumption implemented
+[ ] tenant isolation implemented
+[ ] RLS implemented
+[ ] server-side authorization enforced
+[ ] approval UI implemented
+[ ] signature UI implemented
+[ ] notification UI implemented
+[ ] authorized audit UI implemented where required
+[ ] accessibility reviewed
+[ ] responsive behavior reviewed
+[ ] meaningful tests created
+[ ] tests actually run where possible
+[ ] typecheck passes
+[ ] lint passes
+[ ] test suite passes where available
+[ ] production build passes
+[ ] README updated
+[ ] PROJECT_MEMORY.md updated
+[ ] PROGRESS.md updated
+[ ] PROJECT_CONTEXT.md updated
+[ ] ERROR_LOG.md updated
+[ ] no task-specific completion report created
+[ ] no secrets committed
+
 ==================================================
+63. SCOPE LIMIT
+===============
 
-After completing the task, STOP.
+Do NOT begin EDU-011.
 
-Return exactly:
+Do NOT implement unrelated future features.
 
-# EDU-003 — Supabase Configuration
+You may create interfaces/hooks/events that future tasks will consume, but do not fully implement future task functionality.
+
+Do not redesign the entire existing architecture.
+
+Reuse EDU-004 through EDU-009 wherever appropriate.
+
+==================================================
+64. FINAL RESPONSE
+==================
+
+When finished, return exactly this structure:
+
+# EDU-010 Final Status
 
 ## Status
+
 COMPLETE / PARTIAL / BLOCKED
 
-## Supabase Setup
-- Supabase project configured: YES/NO
-- Client configured: YES/NO
-- Server client configured: YES/NO
-- Service-role abstraction: YES/NO/NOT REQUIRED
-- Migration system: YES/NO
+## Prerequisite
 
-## Environment
-List variable NAMES only.
+Actual EDU-009 verification result.
 
-Never reveal secret values.
+## Approval System
+
+Explain the actual implementation.
+
+## Signature System
+
+Explain the actual implementation.
+
+## Notification System
+
+Explain the actual implementation.
+
+## Audit Integration
+
+Explain how the existing audit system was reused.
+
+## Workflow Integration
+
+Explain approval/signature waiting and workflow resumption.
 
 ## Security
-List verification results.
+
+Explain:
+
+* authentication
+* authorization
+* tenant isolation
+* RLS
+* self-approval/separation-of-duties
+* immutability
+* concurrency
 
 ## Database
-Explicitly state:
 
-"Application database schema has NOT yet been implemented. It is scheduled for EDU-004."
+List actual new migrations and schema changes.
 
-## Authentication
-Explicitly state:
+## UI
 
-"Authentication has NOT yet been implemented. It will be implemented in a later task."
+List actual routes/components implemented.
 
-## Tests
-Show exact commands and results.
+## Testing
+
+Report actual results using:
+
+PASS
+FAIL
+NOT RUN
+BLOCKED
 
 ## Build
-Show exact command and result.
 
-## Git Status
-Explain what is tracked and confirm secrets are excluded.
+Report:
+
+* typecheck
+* lint
+* tests
+* build
+
+with actual results.
 
 ## Errors
-List ERR IDs or state that none occurred.
+
+List actual ERR-XXX IDs.
 
 ## Decisions
-List DEC IDs.
 
-## Files Created/Changed
-List every relevant source/configuration file.
-
-Do NOT list secret values.
+List actual DEC-XXX IDs.
 
 ## State Files
-Confirm local state files were updated.
+
+Confirm:
+
+PROJECT_MEMORY.md
+PROGRESS.md
+PROJECT_CONTEXT.md
+ERROR_LOG.md
+
+were updated.
+
+## Remaining Blockers
+
+List only genuine blockers.
 
 ## Next Task
 
-EDU-004 — Design and Implement EduSphere AI Database Schema and Supabase Migrations
+If EDU-010 is genuinely complete:
 
-Explain why EDU-004 is next.
+EDU-011
+
+Otherwise explain exactly what must be completed first.
 
 STOP.
 
-Do not begin EDU-004 automatically.
+Do not start EDU-011 automatically.

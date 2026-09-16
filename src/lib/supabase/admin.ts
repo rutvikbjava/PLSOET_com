@@ -23,10 +23,12 @@
  * NEVER use this client casually. When in doubt, use server.ts instead.
  */
 
-import { createClient } from '@supabase/supabase-js';
+import { createClient as createSupabaseClient } from '@supabase/supabase-js';
 import { getPublicConfig, getServerConfig } from '@/config/env';
 
-let adminClient: ReturnType<typeof createClient> | null = null;
+type SupabaseClient = ReturnType<typeof createSupabaseClient>;
+
+let adminClient: SupabaseClient | null = null;
 
 /**
  * Get admin client with service role key
@@ -36,7 +38,7 @@ let adminClient: ReturnType<typeof createClient> | null = null;
  * @throws Error if called in browser context
  * @throws Error if service role key is not configured
  */
-export function getAdminClient() {
+export function getAdminClient(): SupabaseClient {
   // Ensure this is never called in browser
   if (typeof window !== 'undefined') {
     throw new Error(
@@ -55,7 +57,7 @@ export function getAdminClient() {
 
   // Create singleton instance
   if (!adminClient) {
-    adminClient = createClient(
+    adminClient = createSupabaseClient(
       publicConfig.supabase.url,
       serverConfig.supabase.serviceRoleKey,
       {
@@ -85,4 +87,12 @@ export function isAdminClientAvailable(): boolean {
   } catch {
     return false;
   }
+}
+
+/**
+ * Create a new admin client instance
+ * Alias for getAdminClient for import compatibility
+ */
+export function createClient(): SupabaseClient {
+  return getAdminClient();
 }
