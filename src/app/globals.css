@@ -2,40 +2,40 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Import Google Fonts */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Poppins:wght@500;600;700&display=swap');
+
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
-  --primary: #2563eb;
+  /* Official Education Color Palette */
+  --background: #f8f9fb;
+  --foreground: #1f2937;
+  --primary: #0d173b;
   --primary-foreground: #ffffff;
-  --secondary: #f3f4f6;
-  --secondary-foreground: #374151;
-  --border: #e5e7eb;
+  --secondary: #4a5b7d;
+  --secondary-foreground: #ffffff;
+  --accent: #d4af37;
+  --accent-foreground: #1f2937;
+  --border: #e5e8ed;
   --error: #dc2626;
   --error-foreground: #ffffff;
   --success: #16a34a;
   --success-foreground: #ffffff;
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-    --primary: #3b82f6;
-    --primary-foreground: #ffffff;
-    --secondary: #1f2937;
-    --secondary-foreground: #d1d5db;
-    --border: #374151;
-  }
+  --warning: #f59e0b;
+  --warning-foreground: #1f2937;
+  --muted: #f1f3f6;
+  --muted-foreground: #6e7a91;
 }
 
 body {
   color: var(--foreground);
   background: var(--background);
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
     'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
     sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  font-size: 16px;
+  line-height: 1.6;
 }
 
 * {
@@ -44,10 +44,16 @@ body {
   margin: 0;
 }
 
+/* Smooth scrolling */
+html {
+  scroll-behavior: smooth;
+}
+
 /* Focus visible styles for accessibility */
 *:focus-visible {
-  outline: 2px solid var(--primary);
+  outline: 2px solid var(--accent);
   outline-offset: 2px;
+  border-radius: 4px;
 }
 
 /* Skip to content link for accessibility */
@@ -57,17 +63,88 @@ body {
   left: 0;
   background: var(--primary);
   color: var(--primary-foreground);
-  padding: 8px;
+  padding: 12px 20px;
   text-decoration: none;
   z-index: 100;
+  font-weight: 600;
+  border-radius: 0 0 8px 0;
 }
 
 .skip-to-content:focus {
   top: 0;
 }
 
+/* Headings use display font */
+h1, h2, h3, h4, h5, h6 {
+  font-family: 'Poppins', 'Inter', sans-serif;
+  font-weight: 600;
+  color: var(--primary);
+  line-height: 1.2;
+}
+
+h1 {
+  font-size: 2.5rem;
+  font-weight: 700;
+}
+
+h2 {
+  font-size: 2rem;
+}
+
+h3 {
+  font-size: 1.5rem;
+}
+
+/* Links */
+a {
+  color: var(--primary);
+  text-decoration: none;
+  transition: color 0.2s ease;
+}
+
+a:hover {
+  color: var(--secondary);
+}
+
+/* Buttons base style */
+button {
+  font-family: 'Inter', sans-serif;
+  font-weight: 500;
+}
+
+/* Selection */
+::selection {
+  background-color: var(--accent);
+  color: var(--primary);
+}
+
+::-moz-selection {
+  background-color: var(--accent);
+  color: var(--primary);
+}
+
 @layer utilities {
   .text-balance {
     text-wrap: balance;
+  }
+  
+  .shadow-edu {
+    box-shadow: 0 2px 8px rgba(13, 23, 59, 0.08);
+  }
+  
+  .shadow-edu-lg {
+    box-shadow: 0 4px 16px rgba(13, 23, 59, 0.12);
+  }
+  
+  .shadow-edu-xl {
+    box-shadow: 0 8px 24px rgba(13, 23, 59, 0.16);
+  }
+  
+  .bg-gradient-edu {
+    background: linear-gradient(135deg, #0d173b 0%, #2f3f7f 100%);
+  }
+  
+  .bg-gradient-accent {
+    background: linear-gradient(135deg, #efc43f 0%, #d4af37 100%);
   }
 }
