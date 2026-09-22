@@ -146,14 +146,22 @@ export async function processDocument(
         )
       `)
       .eq('id', documentId)
-      .order('document_versions(version_number)', { ascending: false })
-      .limit(1)
       .single();
+
+    // Log detailed error for debugging
+    if (docError) {
+      console.error('[PROCESS_DOCUMENT_QUERY_ERROR]', {
+        documentId,
+        error: docError.message,
+        code: docError.code,
+        details: docError.details,
+      });
+    }
 
     if (docError || !document) {
       return {
         success: false,
-        error: 'Document not found',
+        error: docError ? `Database error: ${docError.message}` : 'Document not found',
         category: 'PERMANENT',
         canRetry: false,
       };
@@ -162,6 +170,9 @@ export async function processDocument(
     const versions = Array.isArray((document as any).document_versions) 
       ? (document as any).document_versions 
       : [(document as any).document_versions];
+    
+    // Sort by version_number descending to get latest
+    versions.sort((a: any, b: any) => (b.version_number || 0) - (a.version_number || 0));
     
     const latestVersion = versions[0];
     versionId = latestVersion?.id || null;  // Store for error handling
