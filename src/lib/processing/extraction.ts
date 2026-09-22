@@ -75,14 +75,37 @@ export async function extractPDF(buffer: Buffer): Promise<ExtractionResult> {
 
     // Convert Buffer to Uint8Array for unpdf
     const data = new Uint8Array(buffer);
+    console.log('[PDF_EXTRACTION] Buffer converted to Uint8Array');
     
     // Get document proxy using unpdf's serverless build
-    const pdf = await getDocumentProxy(data);
-    
-    console.log('[PDF_EXTRACTION] Document loaded - pages:', pdf.numPages);
+    console.log('[PDF_EXTRACTION] Loading PDF document...');
+    let pdf;
+    try {
+      pdf = await getDocumentProxy(data);
+      console.log('[PDF_EXTRACTION] Document loaded successfully - pages:', pdf.numPages);
+    } catch (loadError) {
+      console.error('[PDF_EXTRACTION] Failed to load PDF document:', loadError);
+      throw new ExtractionError(
+        `Failed to load PDF: ${loadError instanceof Error ? loadError.message : String(loadError)}`,
+        'CORRUPT',
+        loadError
+      );
+    }
 
     // Extract text from all pages
-    const result = await unpdfExtractText(pdf, { mergePages: true });
+    console.log('[PDF_EXTRACTION] Extracting text from', pdf.numPages, 'pages...');
+    let result;
+    try {
+      result = await unpdfExtractText(pdf, { mergePages: true });
+      console.log('[PDF_EXTRACTION] Text extraction completed');
+    } catch (extractError) {
+      console.error('[PDF_EXTRACTION] Failed to extract text:', extractError);
+      throw new ExtractionError(
+        `Failed to extract text: ${extractError instanceof Error ? extractError.message : String(extractError)}`,
+        'UNKNOWN',
+        extractError
+      );
+    }
     
     // Handle different result formats - unpdf returns { text: string, totalPages: number }
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
