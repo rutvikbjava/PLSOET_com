@@ -18,7 +18,8 @@
  */
 
 import mammoth from 'mammoth';
-// Removed unpdf - using Gemini API for PDF extraction instead
+// @ts-expect-error - pdf-parse-fork has no type declarations
+import pdfParse from 'pdf-parse-fork';
 
 /**
  * Extraction result with metadata
@@ -63,104 +64,49 @@ export class ExtractionError extends Error {
  */
 export async function extractPDF(buffer: Buffer): Promise<ExtractionResult> {
   try {
-    console.log('[PDF_EXTRACTION] Started using Gemini API - buffer bytes:', buffer.length);
+    console.log('[PDF_EXTRACTION] Started using pdf-parse - buffer bytes:', buffer.length);
 
     // Validate buffer
     if (!buffer || buffer.length === 0) {
       throw new ExtractionError('Empty PDF buffer', 'EMPTY');
     }
 
-    // Get Gemini API key from environment
-    const apiKey = process.env.GEMINI_API_KEY;
-    if (!apiKey) {
-      throw new ExtractionError(
-        'GEMINI_API_KEY not configured',
-        'UNKNOWN'
-      );
-    }
-
-    // Convert buffer to base64 for Gemini API
-    const base64Data = buffer.toString('base64');
-    console.log('[PDF_EXTRACTION] PDF converted to base64');
-
-    // Call Gemini API to extract text from PDF
-    const response = await fetch(
-      `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-latest:generateContent?key=${apiKey}`,
-      {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          contents: [
-            {
-              parts: [
-                {
-                  text: 'Extract all text from this PDF document. Return only the extracted text, no explanations or formatting.',
-                },
-                {
-                  inline_data: {
-                    mime_type: 'application/pdf',
-                    data: base64Data,
-                  },
-                },
-              ],
-            },
-          ],
-        }),
-      }
-    );
-
-    if (!response.ok) {
-      const errorText = await response.text();
-      console.error('[PDF_EXTRACTION] Gemini API error:', response.status, errorText);
-      throw new ExtractionError(
-        `Gemini API error: ${response.status} - ${errorText}`,
-        'UNKNOWN'
-      );
-    }
-
-    const result = await response.json();
-    console.log('[PDF_EXTRACTION] Gemini API response received');
-
-    // Extract text from Gemini response
-    const candidates = result.candidates;
-    if (!candidates || candidates.length === 0) {
-      throw new ExtractionError(
-        'No text extracted from PDF by Gemini',
-        'EMPTY'
-      );
-    }
-
-    const text = candidates[0]?.content?.parts?.[0]?.text?.trim() || '';
+    // Parse PDF using pdf-parse-fork (serverless-compatible)
+    const data = await pdfParse(buffer);
     
-    if (!text) {
-      console.warn('[PDF_EXTRACTION] Empty text extracted');
+    const text = data.text.trim();
+    const pageCount = data.numpages;
+    const wordCount = text ? text.split(/\s+/).length : 0;
+
+    console.log('[PDF_EXTRACTION] Completed - pages:', pageCount, 'characters:', text.length, 'words:', wordCount);
+
+    // Detect image-only PDFs (pages exist but no text)
+    const isImageOnly = pageCount > 0 && wordCount < 10;
+
+    if (isImageOnly) {
+      console.warn('[PDF_EXTRACTION] Image-only PDF detected');
       return {
         text: '',
         metadata: {
-          pageCount: 0,
+          pageCount,
           wordCount: 0,
           isEmpty: true,
           isImageOnly: true,
           format: 'PDF',
-          extractionMethod: 'gemini-api',
+          extractionMethod: 'pdf-parse',
         },
       };
     }
 
-    const wordCount = text.split(/\s+/).length;
-    console.log('[PDF_EXTRACTION] Completed - characters:', text.length, 'words:', wordCount);
-
     return {
       text,
       metadata: {
-        pageCount: 0, // Gemini doesn't provide page count
+        pageCount,
         wordCount,
-        isEmpty: false,
+        isEmpty: wordCount === 0,
         isImageOnly: false,
         format: 'PDF',
-        extractionMethod: 'gemini-api',
+        extractionMethod: 'pdf-parse',
       },
     };
   } catch (error) {
@@ -169,12 +115,18 @@ export async function extractPDF(buffer: Buffer): Promise<ExtractionResult> {
       stack: error instanceof Error ? error.stack : undefined,
     });
 
-    if (error instanceof ExtractionError) {
-      throw error;
+    const errorMessage = error instanceof Error ? error.message : String(error);
+
+    if (errorMessage.includes('Invalid PDF') || errorMessage.includes('not a PDF')) {
+      throw new ExtractionError(
+        'Invalid or corrupted PDF file',
+        'CORRUPT',
+        error
+      );
     }
 
     throw new ExtractionError(
-      `Failed to extract text from PDF: ${error instanceof Error ? error.message : String(error)}`,
+      `Failed to extract text from PDF: ${errorMessage}`,
       'UNKNOWN',
       error
     );
