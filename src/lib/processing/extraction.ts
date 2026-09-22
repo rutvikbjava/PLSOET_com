@@ -64,7 +64,7 @@ export class ExtractionError extends Error {
  */
 export async function extractPDF(buffer: Buffer): Promise<ExtractionResult> {
   try {
-    console.log('[PDF_EXTRACTION] Started using pdf-parse - buffer bytes:', buffer.length);
+    console.error('[PDF_EXTRACTION] Started using pdf-parse - buffer bytes:', buffer.length);
 
     // Validate buffer
     if (!buffer || buffer.length === 0) {
@@ -72,19 +72,32 @@ export async function extractPDF(buffer: Buffer): Promise<ExtractionResult> {
     }
 
     // Parse PDF using pdf-parse-fork (serverless-compatible)
-    const data = await pdfParse(buffer);
+    let data;
+    try {
+      console.error('[PDF_EXTRACTION] Calling pdfParse()...');
+      data = await pdfParse(buffer);
+      console.error('[PDF_EXTRACTION] pdfParse() returned successfully');
+    } catch (parseError) {
+      console.error('[PDF_EXTRACTION] pdfParse() failed:', {
+        error: parseError instanceof Error ? parseError.message : String(parseError),
+        stack: parseError instanceof Error ? parseError.stack : undefined,
+        errorType: typeof parseError,
+        errorKeys: parseError ? Object.keys(parseError) : [],
+      });
+      throw parseError;
+    }
     
     const text = data.text.trim();
     const pageCount = data.numpages;
     const wordCount = text ? text.split(/\s+/).length : 0;
 
-    console.log('[PDF_EXTRACTION] Completed - pages:', pageCount, 'characters:', text.length, 'words:', wordCount);
+    console.error('[PDF_EXTRACTION] Completed - pages:', pageCount, 'characters:', text.length, 'words:', wordCount);
 
     // Detect image-only PDFs (pages exist but no text)
     const isImageOnly = pageCount > 0 && wordCount < 10;
 
     if (isImageOnly) {
-      console.warn('[PDF_EXTRACTION] Image-only PDF detected');
+      console.error('[PDF_EXTRACTION] Image-only PDF detected');
       return {
         text: '',
         metadata: {
@@ -110,9 +123,11 @@ export async function extractPDF(buffer: Buffer): Promise<ExtractionResult> {
       },
     };
   } catch (error) {
-    console.error('[PDF_EXTRACTION_ERROR]', {
+    console.error('[PDF_EXTRACTION_ERROR] FULL ERROR:', {
       error: error instanceof Error ? error.message : String(error),
       stack: error instanceof Error ? error.stack : undefined,
+      errorType: typeof error,
+      errorConstructor: error ? error.constructor.name : 'null',
     });
 
     const errorMessage = error instanceof Error ? error.message : String(error);
