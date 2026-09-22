@@ -23,6 +23,7 @@ import mammoth from 'mammoth';
 let pdf: any = null;
 let pdfParseAvailable = true;
 
+// eslint-disable-next-line @typescript-eslint/no-require-imports
 try {
   const pdfParse = require('pdf-parse');
   pdf = pdfParse.default || pdfParse;
