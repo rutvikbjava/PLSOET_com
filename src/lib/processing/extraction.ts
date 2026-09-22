@@ -63,7 +63,7 @@ export class ExtractionError extends Error {
  * @param buffer PDF file buffer
  * @returns Extraction result with metadata
  */
-export async function extractPDF(buffer: Buffer): Promise<ExtractionResult> {
+export async function extractPDF(_buffer: Buffer): Promise<ExtractionResult> {
   // PDF text extraction is not available in Vercel serverless environment
   // due to PDF.js worker requirements and canvas dependencies
   // Return placeholder data - manual review or client-side processing needed
