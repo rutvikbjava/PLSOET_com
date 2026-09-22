@@ -65,16 +65,13 @@ export class ExtractionError extends Error {
  */
 export async function extractPDF(buffer: Buffer): Promise<ExtractionResult> {
   try {
-    // Dynamically import PDF.js (non-legacy build, no canvas required)
-    const pdfjs = await import('pdfjs-dist');
-    
-    // Set worker to use CDN-hosted worker (serverless compatible)
-    pdfjs.GlobalWorkerOptions.workerSrc = `https://cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjs.version}/pdf.worker.min.js`;
+    // Use legacy build which works in Node.js without worker
+    const pdfjs = await import('pdfjs-dist/legacy/build/pdf.mjs');
     
     // Convert Buffer to Uint8Array for PDF.js
     const data = new Uint8Array(buffer);
 
-    // Load the PDF document (serverless compatible)
+    // Load the PDF document (serverless compatible, no worker needed in legacy build)
     const loadingTask = pdfjs.getDocument({
       data,
       useWorkerFetch: false,
