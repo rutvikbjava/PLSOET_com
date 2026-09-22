@@ -358,7 +358,7 @@ async function markProcessingStarted(documentId: string, versionId: string): Pro
       started_at: new Date().toISOString(),
       updated_at: new Date().toISOString(),
     } as any, {
-      onConflict: 'document_version_id',
+      onConflict: 'document_id',  // Fixed: Use document_id unique constraint
     });
 }
 
@@ -387,7 +387,7 @@ async function markProcessingFailed(
       processed_at: new Date().toISOString(),
       updated_at: new Date().toISOString(),
     } as any, {
-      onConflict: 'document_version_id',
+      onConflict: 'document_id',  // Fixed: Use document_id unique constraint
     });
 
   console.error('[PROCESSING_FAILED]', {
@@ -457,7 +457,7 @@ async function storeContext(
   const { data, error } = await adminSupabase
     .from('document_contexts')
     .upsert(contextData as any, {
-      onConflict: 'document_version_id',
+      onConflict: 'document_id',  // Fixed: Use document_id unique constraint, not document_version_id
     })
     .select('id')
     .single();
