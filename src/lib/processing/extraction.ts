@@ -68,13 +68,14 @@ export async function extractPDF(buffer: Buffer): Promise<ExtractionResult> {
     // Dynamically import PDF.js (non-legacy build, no canvas required)
     const pdfjs = await import('pdfjs-dist');
     
-    // Disable worker for serverless environment
-    pdfjs.GlobalWorkerOptions.workerSrc = '';
+    // Set worker to use built-in bundled worker (serverless compatible)
+    // @ts-ignore - workerSrc can be a string path
+    pdfjs.GlobalWorkerOptions.workerSrc = `//cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjs.version}/pdf.worker.min.js`;
     
     // Convert Buffer to Uint8Array for PDF.js
     const data = new Uint8Array(buffer);
 
-    // Load the PDF document without worker (serverless compatible)
+    // Load the PDF document (serverless compatible)
     const loadingTask = pdfjs.getDocument({
       data,
       useWorkerFetch: false,
