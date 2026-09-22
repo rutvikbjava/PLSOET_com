@@ -18,12 +18,22 @@
  */
 
 import mammoth from 'mammoth';
+import * as pdfjs from 'pdfjs-dist';
 
-// NOTE: pdf-parse is disabled due to canvas dependency issues in Vercel serverless
-// PDF text extraction is not available in production until we implement an alternative
-// Possible alternatives: pdfjs-dist (serverless compatible), or use external API
-const pdfParseAvailable = false;
-const pdf: any = null;
+// PDF.js worker configuration - will be set on first use
+let pdfjsInitialized = false;
+
+async function initializePdfjs() {
+  if (pdfjsInitialized) return;
+  
+  if (typeof window === 'undefined') {
+    // Running in Node.js (server-side) - Vercel compatible
+    // PDF.js uses a virtual worker in serverless environments
+    pdfjs.GlobalWorkerOptions.workerSrc = '';
+  }
+  
+  pdfjsInitialized = true;
+}
 
 /**
  * Extraction result with metadata
@@ -55,7 +65,7 @@ export class ExtractionError extends Error {
 }
 
 /**
- * Extract text from PDF file
+ * Extract text from PDF file using PDF.js (pdfjs-dist)
  * 
  * Handles:
  * - Text-based PDFs
@@ -67,27 +77,39 @@ export class ExtractionError extends Error {
  * @returns Extraction result with metadata
  */
 export async function extractPDF(buffer: Buffer): Promise<ExtractionResult> {
-  // Check if pdf-parse is available (canvas dependency)
-  if (!pdfParseAvailable || !pdf) {
-    console.warn('[extractPDF] PDF parsing not available in serverless environment');
-    return {
-      text: '[PDF text extraction unavailable - requires canvas dependency not supported in serverless]',
-      metadata: {
-        pageCount: 0,
-        wordCount: 0,
-        isEmpty: true,
-        isImageOnly: false,
-        format: 'PDF',
-        extractionMethod: 'pdf-parse (unavailable)',
-      },
-    };
-  }
-
   try {
-    const data = await pdf(buffer);
+    // Initialize PDF.js on first use
+    await initializePdfjs();
 
-    const text = data.text.trim();
-    const pageCount = data.numpages;
+    // Convert Buffer to Uint8Array for PDF.js
+    const data = new Uint8Array(buffer);
+
+    // Load the PDF document
+    const loadingTask = pdfjs.getDocument({ data });
+    const pdfDocument = await loadingTask.promise;
+
+    const pageCount = pdfDocument.numPages;
+    let fullText = '';
+
+    // Extract text from each page
+    for (let pageNum = 1; pageNum <= pageCount; pageNum++) {
+      const page = await pdfDocument.getPage(pageNum);
+      const textContent = await page.getTextContent();
+
+      // Concatenate text items with spaces
+      const pageText = textContent.items
+        .map((item: any) => {
+          if ('str' in item) {
+            return item.str;
+          }
+          return '';
+        })
+        .join(' ');
+
+      fullText += pageText + '\n\n';
+    }
+
+    const text = fullText.trim();
     const wordCount = text ? text.split(/\s+/).length : 0;
 
     // Detect image-only PDFs (pages exist but no text)
@@ -102,7 +124,7 @@ export async function extractPDF(buffer: Buffer): Promise<ExtractionResult> {
           isEmpty: true,
           isImageOnly: true,
           format: 'PDF',
-          extractionMethod: 'pdf-parse',
+          extractionMethod: 'pdfjs-dist',
         },
       };
     }
@@ -115,7 +137,7 @@ export async function extractPDF(buffer: Buffer): Promise<ExtractionResult> {
         isEmpty: wordCount === 0,
         isImageOnly: false,
         format: 'PDF',
-        extractionMethod: 'pdf-parse',
+        extractionMethod: 'pdfjs-dist',
       },
     };
   } catch (error) {
