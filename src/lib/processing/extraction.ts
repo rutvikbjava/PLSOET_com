@@ -68,6 +68,9 @@ export async function extractPDF(buffer: Buffer): Promise<ExtractionResult> {
     // Dynamically import PDF.js (non-legacy build, no canvas required)
     const pdfjs = await import('pdfjs-dist');
     
+    // Disable worker for serverless environment
+    pdfjs.GlobalWorkerOptions.workerSrc = '';
+    
     // Convert Buffer to Uint8Array for PDF.js
     const data = new Uint8Array(buffer);
 
@@ -76,6 +79,8 @@ export async function extractPDF(buffer: Buffer): Promise<ExtractionResult> {
       data,
       useWorkerFetch: false,
       useSystemFonts: true,
+      disableAutoFetch: true,
+      disableStream: true,
     });
     const pdfDocument = await loadingTask.promise;
 
@@ -132,8 +137,13 @@ export async function extractPDF(buffer: Buffer): Promise<ExtractionResult> {
       },
     };
   } catch (error) {
-    // Categorize PDF errors
+    // Categorize PDF errors with detailed logging
     const errorMessage = error instanceof Error ? error.message : String(error);
+    
+    console.error('[PDF_EXTRACTION_ERROR]', {
+      error: errorMessage,
+      stack: error instanceof Error ? error.stack : undefined,
+    });
 
     if (errorMessage.includes('Invalid PDF')) {
       throw new ExtractionError(
@@ -144,7 +154,7 @@ export async function extractPDF(buffer: Buffer): Promise<ExtractionResult> {
     }
 
     throw new ExtractionError(
-      'Failed to extract text from PDF',
+      `Failed to extract text from PDF: ${errorMessage}`,
       'UNKNOWN',
       error
     );
