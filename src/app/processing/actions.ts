@@ -33,24 +33,7 @@ export async function triggerProcessing(
   try {
     await requireAuth();
 
-    // Verify user has access to this document (RLS handles institution_id check)
-    const supabase = await createServerClient();
-    const { data: document, error } = await supabase
-      .from('documents')
-      .select('id')
-      .eq('id', documentId)
-      .single();
-
-    if (error || !document) {
-      return {
-        success: false,
-        error: 'Document not found or access denied',
-        category: 'PERMANENT',
-        canRetry: false,
-      };
-    }
-
-    // Trigger processing
+    // Trigger processing directly (processDocument will verify document exists with admin client)
     return await processDocument(documentId, options);
   } catch (error) {
     console.error('[TRIGGER_PROCESSING_ERROR]', error);
@@ -73,23 +56,7 @@ export async function retryProcessingAction(documentId: string): Promise<Process
   try {
     await requireAuth();
 
-    // Verify user has access to this document (RLS handles institution_id check)
-    const supabase = await createServerClient();
-    const { data: document, error } = await supabase
-      .from('documents')
-      .select('id')
-      .eq('id', documentId)
-      .single();
-
-    if (error || !document) {
-      return {
-        success: false,
-        error: 'Document not found or access denied',
-        category: 'PERMANENT',
-        canRetry: false,
-      };
-    }
-
+    // Retry processing directly (retryProcessing will verify document exists with admin client)
     return await retryProcessing(documentId);
   } catch (error) {
     console.error('[RETRY_PROCESSING_ERROR]', error);
@@ -112,21 +79,7 @@ export async function getProcessingStatusAction(documentId: string) {
   try {
     await requireAuth();
 
-    // Verify user has access to this document (RLS handles institution_id check)
-    const supabase = await createServerClient();
-    const { data: document, error } = await supabase
-      .from('documents')
-      .select('id')
-      .eq('id', documentId)
-      .single();
-
-    if (error || !document) {
-      return {
-        success: false,
-        error: 'Document not found or access denied',
-      };
-    }
-
+    // Get status directly (getProcessingStatus uses admin client)
     const status = await getProcessingStatus(documentId);
 
     return {
