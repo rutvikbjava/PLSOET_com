@@ -17,11 +17,19 @@
  * @module processing/extraction
  */
 
-import * as pdfParse from 'pdf-parse';
 import mammoth from 'mammoth';
 
-// pdf-parse default export
-const pdf = (pdfParse as any).default || pdfParse;
+// Dynamically import pdf-parse to handle canvas dependency issues in serverless
+let pdf: any = null;
+let pdfParseAvailable = true;
+
+try {
+  const pdfParse = require('pdf-parse');
+  pdf = pdfParse.default || pdfParse;
+} catch (error) {
+  console.warn('[EXTRACTION] pdf-parse not available (canvas dependency missing in serverless)');
+  pdfParseAvailable = false;
+}
 
 /**
  * Extraction result with metadata
@@ -65,6 +73,22 @@ export class ExtractionError extends Error {
  * @returns Extraction result with metadata
  */
 export async function extractPDF(buffer: Buffer): Promise<ExtractionResult> {
+  // Check if pdf-parse is available (canvas dependency)
+  if (!pdfParseAvailable || !pdf) {
+    console.warn('[extractPDF] PDF parsing not available in serverless environment');
+    return {
+      text: '[PDF text extraction unavailable - requires canvas dependency not supported in serverless]',
+      metadata: {
+        pageCount: 0,
+        wordCount: 0,
+        isEmpty: true,
+        isImageOnly: false,
+        format: 'PDF',
+        extractionMethod: 'pdf-parse (unavailable)',
+      },
+    };
+  }
+
   try {
     const data = await pdf(buffer);
 
