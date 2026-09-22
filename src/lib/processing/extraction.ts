@@ -69,7 +69,7 @@ export async function extractPDF(buffer: Buffer): Promise<ExtractionResult> {
     const pdfjs = await import('pdfjs-dist');
     
     // Set worker to use built-in bundled worker (serverless compatible)
-    // @ts-ignore - workerSrc can be a string path
+    // @ts-expect-error - workerSrc can be a string path
     pdfjs.GlobalWorkerOptions.workerSrc = `//cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjs.version}/pdf.worker.min.js`;
     
     // Convert Buffer to Uint8Array for PDF.js
