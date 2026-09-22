@@ -52,7 +52,10 @@ export function ProcessTriggerButton({ documentId }: Props) {
         {isProcessing ? 'Processing...' : 'Process Document'}
       </Button>
       {error && (
-        <p className="mt-2 text-sm text-red-600">{error}</p>
+        <div className="mt-2 p-3 bg-red-50 border border-red-200 rounded">
+          <p className="text-sm text-red-800 font-medium">Processing Error:</p>
+          <p className="text-sm text-red-600 mt-1">{error}</p>
+        </div>
       )}
     </div>
   );

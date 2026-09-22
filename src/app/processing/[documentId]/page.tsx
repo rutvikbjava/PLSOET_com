@@ -27,7 +27,22 @@ async function ProcessingContent({ documentId }: { documentId: string }) {
     getDocumentContext(documentId),
   ]);
 
-  if (!statusResult.success || !contextResult.success || !contextResult.document) {
+  // Debug logging (will show in server logs)
+  if (!contextResult.success) {
+    console.error('[PROCESSING_PAGE] Failed to get document context:', {
+      documentId,
+      error: contextResult.error,
+    });
+  }
+
+  if (!statusResult.success) {
+    console.error('[PROCESSING_PAGE] Failed to get processing status:', {
+      documentId,
+      error: statusResult.error,
+    });
+  }
+
+  if (!contextResult.success || !contextResult.document) {
     notFound();
   }
 
