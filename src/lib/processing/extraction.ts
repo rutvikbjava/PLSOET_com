@@ -18,9 +18,7 @@
  */
 
 import mammoth from 'mammoth';
-
-// Use dynamic import for PDF.js to avoid canvas dependency issues
-// PDF.js will be loaded only when needed in serverless environment
+import { extractText as unpdfExtractText, getDocumentProxy } from 'unpdf';
 
 /**
  * Extraction result with metadata
@@ -52,7 +50,7 @@ export class ExtractionError extends Error {
 }
 
 /**
- * Extract text from PDF file using PDF.js (pdfjs-dist)
+ * Extract text from PDF file using unpdf (serverless-compatible)
  * 
  * Handles:
  * - Text-based PDFs
@@ -63,24 +61,98 @@ export class ExtractionError extends Error {
  * @param buffer PDF file buffer
  * @returns Extraction result with metadata
  */
-export async function extractPDF(_buffer: Buffer): Promise<ExtractionResult> {
-  // PDF text extraction is not available in Vercel serverless environment
-  // due to PDF.js worker requirements and canvas dependencies
-  // Return placeholder data - manual review or client-side processing needed
-  
-  console.warn('[PDF_EXTRACTION] Skipped - not supported in serverless environment');
-  
-  return {
-    text: '[PDF text extraction unavailable in serverless - file uploaded successfully but requires manual review or client-side processing]',
-    metadata: {
-      pageCount: 0,
-      wordCount: 0,
-      isEmpty: true,
-      isImageOnly: false,
-      format: 'PDF',
-      extractionMethod: 'none (serverless limitation)',
-    },
-  };
+export async function extractPDF(buffer: Buffer): Promise<ExtractionResult> {
+  try {
+    console.log('[PDF_EXTRACTION] Started - buffer bytes:', buffer.length);
+
+    // Validate buffer
+    if (!buffer || buffer.length === 0) {
+      throw new ExtractionError(
+        'Empty PDF buffer',
+        'EMPTY'
+      );
+    }
+
+    // Convert Buffer to Uint8Array for unpdf
+    const data = new Uint8Array(buffer);
+    
+    // Get document proxy using unpdf's serverless build
+    const pdf = await getDocumentProxy(data);
+    
+    console.log('[PDF_EXTRACTION] Document loaded - pages:', pdf.numPages);
+
+    // Extract text from all pages
+    const result = await unpdfExtractText(pdf, { mergePages: true });
+    
+    // Handle different result formats - unpdf returns { text: string, totalPages: number }
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const resultText = (result as any).text;
+    let text: string;
+    if (typeof resultText === 'string') {
+      text = resultText.trim();
+    } else if (Array.isArray(resultText)) {
+      text = resultText.join('\n').trim();
+    } else {
+      text = String(resultText).trim();
+    }
+
+    const pageCount = pdf.numPages;
+    const wordCount = text ? text.split(/\s+/).length : 0;
+
+    console.log('[PDF_EXTRACTION] Completed - pages:', pageCount, 'characters:', text.length, 'words:', wordCount);
+
+    // Detect image-only PDFs (pages exist but no text)
+    const isImageOnly = pageCount > 0 && wordCount < 10;
+
+    if (isImageOnly) {
+      console.warn('[PDF_EXTRACTION] Image-only PDF detected');
+      return {
+        text: '',
+        metadata: {
+          pageCount,
+          wordCount: 0,
+          isEmpty: true,
+          isImageOnly: true,
+          format: 'PDF',
+          extractionMethod: 'unpdf',
+        },
+      };
+    }
+
+    return {
+      text,
+      metadata: {
+        pageCount,
+        wordCount,
+        isEmpty: wordCount === 0,
+        isImageOnly: false,
+        format: 'PDF',
+        extractionMethod: 'unpdf',
+      },
+    };
+  } catch (error) {
+    // Categorize PDF errors with detailed logging
+    const errorMessage = error instanceof Error ? error.message : String(error);
+    
+    console.error('[PDF_EXTRACTION_ERROR]', {
+      error: errorMessage,
+      stack: error instanceof Error ? error.stack : undefined,
+    });
+
+    if (errorMessage.includes('Invalid PDF') || errorMessage.includes('not a PDF')) {
+      throw new ExtractionError(
+        'Invalid or corrupted PDF file',
+        'CORRUPT',
+        error
+      );
+    }
+
+    throw new ExtractionError(
+      `Failed to extract text from PDF: ${errorMessage}`,
+      'UNKNOWN',
+      error
+    );
+  }
 }
 
 /**
@@ -233,25 +305,19 @@ export async function extractText(
  * Validate extraction result quality
  * 
  * Checks:
- * - Minimum word count (10 words) for non-PDF files
- * - PDFs always pass (extraction may be unavailable in serverless)
+ * - Minimum word count (10 words)
  * - Not image-only PDF
  * 
  * @param result Extraction result
  * @returns True if extraction is sufficient for processing
  */
 export function isExtractionSufficient(result: ExtractionResult): boolean {
-  // PDFs are accepted even without extraction (serverless limitation)
-  if (result.metadata.format === 'PDF') {
-    return true;
-  }
-
   // Image-only PDFs are insufficient
   if (result.metadata.isImageOnly) {
     return false;
   }
 
-  // Need at least 10 words for meaningful processing (non-PDF)
+  // Need at least 10 words for meaningful processing
   if (result.metadata.wordCount < 10) {
     return false;
   }
