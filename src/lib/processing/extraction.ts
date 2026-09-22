@@ -18,22 +18,9 @@
  */
 
 import mammoth from 'mammoth';
-import * as pdfjs from 'pdfjs-dist';
 
-// PDF.js worker configuration - will be set on first use
-let pdfjsInitialized = false;
-
-async function initializePdfjs() {
-  if (pdfjsInitialized) return;
-  
-  if (typeof window === 'undefined') {
-    // Running in Node.js (server-side) - Vercel compatible
-    // PDF.js uses a virtual worker in serverless environments
-    pdfjs.GlobalWorkerOptions.workerSrc = '';
-  }
-  
-  pdfjsInitialized = true;
-}
+// Use dynamic import for PDF.js to avoid canvas dependency issues
+// PDF.js will be loaded only when needed in serverless environment
 
 /**
  * Extraction result with metadata
@@ -78,14 +65,18 @@ export class ExtractionError extends Error {
  */
 export async function extractPDF(buffer: Buffer): Promise<ExtractionResult> {
   try {
-    // Initialize PDF.js on first use
-    await initializePdfjs();
-
+    // Dynamically import PDF.js (non-legacy build, no canvas required)
+    const pdfjs = await import('pdfjs-dist');
+    
     // Convert Buffer to Uint8Array for PDF.js
     const data = new Uint8Array(buffer);
 
-    // Load the PDF document
-    const loadingTask = pdfjs.getDocument({ data });
+    // Load the PDF document without worker (serverless compatible)
+    const loadingTask = pdfjs.getDocument({
+      data,
+      useWorkerFetch: false,
+      useSystemFonts: true,
+    });
     const pdfDocument = await loadingTask.promise;
 
     const pageCount = pdfDocument.numPages;

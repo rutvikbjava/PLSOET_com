@@ -12,7 +12,7 @@
 
 'use server';
 
-import { requireAuth, requireProfile } from '@/lib/auth/session';
+import { requireAuth } from '@/lib/auth/session';
 import { processDocument, retryProcessing, getProcessingStatus, type ProcessingResult } from '@/lib/processing';
 import { createClient as createServerClient } from '@/lib/supabase/server';
 
@@ -32,15 +32,13 @@ export async function triggerProcessing(
 ): Promise<ProcessingResult> {
   try {
     await requireAuth();
-    const profile = await requireProfile();
 
-    // Verify user has access to this document
+    // Verify user has access to this document (RLS handles institution_id check)
     const supabase = await createServerClient();
     const { data: document, error } = await supabase
       .from('documents')
-      .select('id, institution_id')
+      .select('id')
       .eq('id', documentId)
-      .eq('institution_id', profile.institution_id)
       .single();
 
     if (error || !document) {
@@ -74,15 +72,13 @@ export async function triggerProcessing(
 export async function retryProcessingAction(documentId: string): Promise<ProcessingResult> {
   try {
     await requireAuth();
-    const profile = await requireProfile();
 
-    // Verify user has access to this document
+    // Verify user has access to this document (RLS handles institution_id check)
     const supabase = await createServerClient();
     const { data: document, error } = await supabase
       .from('documents')
-      .select('id, institution_id')
+      .select('id')
       .eq('id', documentId)
-      .eq('institution_id', profile.institution_id)
       .single();
 
     if (error || !document) {
@@ -115,15 +111,13 @@ export async function retryProcessingAction(documentId: string): Promise<Process
 export async function getProcessingStatusAction(documentId: string) {
   try {
     await requireAuth();
-    const profile = await requireProfile();
 
-    // Verify user has access to this document
+    // Verify user has access to this document (RLS handles institution_id check)
     const supabase = await createServerClient();
     const { data: document, error } = await supabase
       .from('documents')
-      .select('id, institution_id')
+      .select('id')
       .eq('id', documentId)
-      .eq('institution_id', profile.institution_id)
       .single();
 
     if (error || !document) {
@@ -157,11 +151,10 @@ export async function getProcessingStatusAction(documentId: string) {
 export async function getDocumentContext(documentId: string) {
   try {
     await requireAuth();
-    const profile = await requireProfile();
 
     const supabase = await createServerClient();
 
-    // Get document with context
+    // Get document with context (RLS handles institution_id check)
     const { data, error } = await supabase
       .from('documents')
       .select(`
@@ -187,7 +180,6 @@ export async function getDocumentContext(documentId: string) {
         )
       `)
       .eq('id', documentId)
-      .eq('institution_id', profile.institution_id)
       .single();
 
     if (error || !data) {
