@@ -1109,11 +1109,7 @@ export async function resumeWorkflowAfterApproval(
   try {
     const adminSupabase = getAdminClient();
 
-    console.log('[WORKFLOW_RESUMPTION] Resuming after approval:', {
-      workflowInstanceId,
-      workflowStepId,
-      decision,
-    });
+    // Resuming workflow after approval decision
 
     // Update step status based on decision
     const stepStatus: WorkflowStepStatus = decision === 'APPROVED' ? 'COMPLETED' : 'FAILED';
@@ -1188,11 +1184,7 @@ export async function resumeWorkflowAfterSignature(
   try {
     const adminSupabase = getAdminClient();
 
-    console.log('[WORKFLOW_RESUMPTION] Resuming after signature:', {
-      workflowInstanceId,
-      workflowStepId,
-      status,
-    });
+    // Resuming workflow after signature
 
     // Update step status
     const stepStatus: WorkflowStepStatus = status === 'COMPLETED' ? 'COMPLETED' : 'FAILED';

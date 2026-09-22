@@ -13,12 +13,16 @@ export class MockEmailProvider implements EmailProvider {
   }
 
   async sendEmail(params: EmailParams): Promise<EmailResult> {
-    console.log('[MOCK_EMAIL_PROVIDER] Would send email:', {
-      to: params.to,
-      subject: params.subject,
-      textPreview: params.text.substring(0, 100) + '...',
-      timestamp: new Date().toISOString(),
-    });
+    // In development, log email details (disabled in production)
+    if (process.env.NODE_ENV === 'development') {
+      // eslint-disable-next-line no-console
+      console.log('[MOCK_EMAIL_PROVIDER] Would send email:', {
+        to: params.to,
+        subject: params.subject,
+        textPreview: params.text.substring(0, 100) + '...',
+        timestamp: new Date().toISOString(),
+      });
+    }
 
     // Simulate async operation
     await new Promise((resolve) => setTimeout(resolve, 100));

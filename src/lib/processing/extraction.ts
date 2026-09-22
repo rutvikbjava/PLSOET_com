@@ -19,18 +19,11 @@
 
 import mammoth from 'mammoth';
 
-// Dynamically import pdf-parse to handle canvas dependency issues in serverless
-let pdf: any = null;
-let pdfParseAvailable = true;
-
-// eslint-disable-next-line @typescript-eslint/no-require-imports
-try {
-  const pdfParse = require('pdf-parse');
-  pdf = pdfParse.default || pdfParse;
-} catch (error) {
-  console.warn('[EXTRACTION] pdf-parse not available (canvas dependency missing in serverless)');
-  pdfParseAvailable = false;
-}
+// NOTE: pdf-parse is disabled due to canvas dependency issues in Vercel serverless
+// PDF text extraction is not available in production until we implement an alternative
+// Possible alternatives: pdfjs-dist (serverless compatible), or use external API
+const pdfParseAvailable = false;
+const pdf: any = null;
 
 /**
  * Extraction result with metadata

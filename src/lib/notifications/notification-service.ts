@@ -89,7 +89,7 @@ export async function createNotification(
     if (error) {
       // Check if duplicate (idempotency constraint)
       if (error.message?.includes('duplicate') || error.message?.includes('unique')) {
-        console.log('[NOTIFICATION_SERVICE] Duplicate notification prevented (idempotency)');
+        // Duplicate notification prevented (idempotency) - silently succeed
         return {
           success: true,
           data: null as any, // Notification already exists
@@ -186,7 +186,7 @@ export async function createEmailNotification(
     if (error) {
       // Check idempotency
       if (error.message?.includes('duplicate') || error.message?.includes('unique')) {
-        console.log('[NOTIFICATION_SERVICE] Duplicate email notification prevented');
+        // Duplicate email notification prevented (idempotency) - silently succeed
         return {
           success: true,
           data: null as any,
